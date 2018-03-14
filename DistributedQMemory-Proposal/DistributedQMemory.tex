@@ -41,13 +41,19 @@ As a more modern example Mnih et al. developed an algorithm to play Atari 2600 v
 The constraint of a lone agent acting sequentially can create situations where training an agent to learn a task can take an exorbitant amount of time. 
 To combat this, researchers have focused on ways to adapt these reinforcement learning algorithm to run in parallel to decrease the amount of time it takes a single agent to learn. 
 
-To add to these works of research I propose a parallelized and distributed version a the Q-learning algorithm using a traditional Q-Memory, Distributed Q-learning (DQL).
+% maybe add? 
+A lot of research recently has been around speeding up Deep NN for RL such as DQN and others. Quite a few papers have suggested ways of parallelizing both the computation for these methods as well as distributing actors and learners to run in parallel, which send back gradients to be used to update a centralized parameter store. 
+
+I propose the we step back and explore a slightly more simplistic model of distributed RL using Q-learning with a Q-value database to explore the effects of a full combination of states and the multiple affects of distributing learners, such as state exploration rates, effects of learner contributions at different stages of learning, and different models for updating the distributed learners and their effect on exploration and performance. 
+%maybe add? ^^^
+
+To add to these works of research I suggest a parallelized and distributed version of the Q-learning algorithm using a traditional Q-Memory, Distributed Q-learning (DQL).
 In this distributed form of Q-learning, there is a centralized Q-Memory that is updated by agents that are running in parallel. Each separate agents runs with their own copy of the environment and a Q-memory. Each agent then learns as usual according to the Q-learning algorithm \cite{watkins}. However, every so often an agent will send updates to the centralized 
 Q-Memory. 
 %These updates are the state's and their q-values that were modified since the last update. 
 The centralized Q-memory then is calculates updates to its values, using a linear combination of q-values and hyper parameters explained in Section \ref{Approach}. 
 
-%I hypothesis that in distributing the learning process amongst multiple learners and aggregating their experiences
+%I hypothesize that in distributing the learning process amongst multiple learners and aggregating their experiences
 I hypothesize that in using this distributed algorithm, there will be a close to linear increase in the learning rate, with respect to the number of parallel agents, of a learner using the centralized Q-memory when compared to a single Q-learning agent. This increased learning rate will reduce the total number of epochs per single agent to achieve similar or better performance, and thus reducing total wall training time. 
 
 \section{Previous Work}
