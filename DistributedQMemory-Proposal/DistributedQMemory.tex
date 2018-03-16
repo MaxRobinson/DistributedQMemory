@@ -54,13 +54,59 @@ Q-Memory.
 The centralized Q-memory then is calculates updates to its values, using a linear combination of q-values and hyper parameters explained in Section \ref{Approach}. 
 
 %I hypothesize that in distributing the learning process amongst multiple learners and aggregating their experiences
-I hypothesize that in using this distributed algorithm, there will be a close to linear increase in the learning rate, with respect to the number of parallel agents, of a learner using the centralized Q-memory when compared to a single Q-learning agent. This increased learning rate will reduce the total number of epochs per single agent to achieve similar or better performance, and thus reducing total wall training time. 
+I hypothesize that in using this distributed algorithm, there will be an increase in the learning rate of a learner using the centralized Q-memory when compared to a single Q-learning agent, as the number of parallel agents increases. This increased learning rate will reduce the total number of epochs per single agent to achieve similar or better performance. This will also likely reducing total wall time it takes to train. 
 
 \section{Previous Work}
 \label{Literature Survey}
 
 \section{Approach}
 \label{Approach}
+The focus of this proposed experiment will be on testing the distributed Q-learning algorithm described in Section \ref{algorithm}.
+The new algorithm and its variations will be tested according to the experimental approach described in \ref{experiments}
+
+\subsection{Distributed Q-learning Algorithm} 
+\label{algorithm}
+The proposed algorithm to study is a novel distributed and parallelized version of Q-learning, referred to as DQL. 
+DQL uses multiple agents environment pairs to learn rather than a single agent and environment. A central Q-memory $Q_c$ server is also kept and is updated 
+as the agents learns and completes epochs. In addition to the central Q-memory, there is also a central learning rate $\alpha_c$ which decays according
+to the number of updates $Q_c$ has received. 
+
+More formally DQL has $n$ agents $A_1, ... , A_n$. Each agent also has a copy of the environment in which it acts, $E_1, ..., E_n$. Each agent keeps track 
+of a local Q-Memory $Q_n$, in addition to local parameters such as the discount factor, learning rate, and $\epsilon$. Each agent then acts and learns inside side of
+its environment according to the $\epsilon$-greedy Q-learning algorithm. 
+
+As the agent learns it will send updates to $Q_c$. In order to send updates, A list of $Q_i(s,a)$s that have been modified since the agent last sent updates is kept by the local agent,
+$Set_{q_i} = Set(Q'_i(s_,a), ... )$.
+The agent then sends updates to $Q_c$ every $\tau$ epochs. $\tau$ is a hyperparameter that can be adjusted to change how frequently each agent reports updates. 
+
+Updates are then performed by the $Q_c$ server each time an update is retrieved. $Q_c$ will be updated according to equation \ref{eq1},
+where $\alpha_{c}$ and $\alpha_i$ are the learning rate for $Q_c$ and $A_i$ respectively. States in the update set 
+\begin{equation}
+\label{eq1}
+Q_c(s,a) = (1-\frac{\alpha_{c}^{2}}{\alpha_i})Q_c(s,a) + \frac{\alpha_{c}^{2}}{\alpha_i} Q_i(s,a)
+\end{equation}
+
+After updates to $Q_c$ are complete, there are two variations that will be explored in this experiment for updating the local agent $A_i$. 
+The first variation will send back a set of updated values from $Q_c$ for just the set of states sent from $A_i$, $Set_{q_i}$. The agent will 
+then replace any local values with those from $Q_c$ This has the affect of reconciling just the states that local agent has updated recently 
+with possible updates from other agents. 
+The second variation overwrites $Q_i$ with the entire $Q_c$ memory. This provides information from other agents to a local agent and homogenizes 
+the $Q_i$s of the different agents. In this variation, states that were explored by one agent would then be shared with other agents even if that 
+agent has not explored the states itself. 
+
+Learning halts after $Q_c$ has been updated a maximum number of times, or performance ceases to improve. To measure the performance of $Q_c$ an agent 
+and environment $A_t, E_t$ are created with $Q_c$ as the instantiated Q-memory. The agent then acts in the environment with no learning occurring. 
+The performance metric being used is than captured upon completion and the test agent and environment are destroyed. How often the performance of $Q_c$ 
+is assessed is configurable and depends upon the fidelity with which the trainer wishes to assess the learning. 
+
+
+\subsection{Experimental Approach}
+\label{experiments}
+
+
+
+
+
 
 
 \vskip 0.2in
