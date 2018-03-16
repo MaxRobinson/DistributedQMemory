@@ -1,0 +1,26 @@
+list of links for lit review:
+
+Sutton and Barto:
+http://incompleteideas.net/book/bookdraft2017nov5.pdf
+https://pdfs.semanticscholar.org/aa32/c33e7c832e76040edc85e8922423b1a1db77.pdf
+
+openAI tutorial:
+https://github.com/vmayoral/basic_reinforcement_learning/blob/master/tutorial4/README.md
+
+
+
+
+
+
+
+
+IMPALA: - V-Trace
+https://arxiv.org/pdf/1802.01561.pdf
+
+
+
+
+
+UCB Exploration via Q-Ensembles
+https://arxiv.org/pdf/1706.01502.pdf
+
