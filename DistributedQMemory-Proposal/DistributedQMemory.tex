@@ -20,8 +20,8 @@
 
 \maketitle
 
-%\begin{abstract}
-%\end{abstract}
+\begin{abstract}
+\end{abstract}
 
 \section{Introduction}
 \label{Introduction}
@@ -90,7 +90,7 @@ After updates to $Q_c$ are complete, there are two variations that will be explo
 The first variation will send back a set of updated values from $Q_c$ for just the set of states sent from $A_i$, $Set_{q_i}$. The agent will 
 then replace any local values with those from $Q_c$ This has the affect of reconciling just the states that local agent has updated recently 
 with possible updates from other agents. 
-The second variation overwrites $Q_i$ with the entire $Q_c$ memory. This provides information from other agents to a local agent and homogenizes 
+The second variation, dubbed DQL-All, overwrites $Q_i$ with the entire $Q_c$ memory. This provides information from other agents to a local agent and homogenizes 
 the $Q_i$s of the different agents. In this variation, states that were explored by one agent would then be shared with other agents even if that 
 agent has not explored the states itself. 
 
@@ -102,10 +102,30 @@ is assessed is configurable and depends upon the fidelity with which the trainer
 
 \subsection{Experimental Approach}
 \label{experiments}
+DQL will be evaluated by running experiments on 3 different environments provided by the OpenAI Gym \cite{gym}.
+The 3 environments used will be Taxi-v2, LunarLander-v2, and BipedalWalker-v2. The Taxi-v2 environment is a discrete 
+environment, while the LunarLander-v2, and BipedalWalker-v2 are continuous. For the continuous state space environments, 
+the values for the states will be discretized on a per environment basis to ensure a single learner can learn in the specific environment. 
+Each environment supplies a different level of problem complexity, and as such aims to demonstrate that any performance gains that could
+be observed using DQL are not subject to the complexity of the environment.
 
+Experiments in each environment will be done using DQL with 2, 4, and 8 agents and done with each variant DQL and DQL-All . Each experiment will be run with 10 trials. The final results
+being averaged over all trials. Each agent will use an $\epsilon$-greedy behavior policy with $\epsilon$ annealed from 1 to .1 over the learning process. The annealing may vary per environment. 
 
+The learning rate for $Q_c$ will be annealed from 1 to .1 over the number of updates from agents. The learning rate per agent is annealed from 1 to .1 over the learning process, updating the learning rate after each epoch. The update frequency for each agent, $\tau$, is anticipated to be set to 1 for all experiments. If additional time is available, $\tau$ will be varied 
+to use the values 1, 5, and 10 to inspect the effect that update frequency has on learning. 
 
+\subsubsection{Evaluation}
+The performance of DQL and DQL-All will be evaluated based on their learning rate to achieve better or equal performance to a single agent system using Q-learning. 
+The learning rate will be measured in the number of epochs required to attain the performance. 
 
+The performance measures to evaluate an algorithm in their environment is determined by the provided OpenAI environment. Each environment has a score mechanic that is calculated
+differently for each one. A learners performance will be judged on the maximization of the environments scoring metric. For example if the goal is to travel a long distance and the score 
+is based on how far the agent got, the performance for that agent will be judge on maximizing the score, i.e. distance. 
+
+In addition to traditional performance metrics, the number of newly explored states will be tracked for each agent. As the agent discovers a new state, the state will be tagged with which epoch
+the state was discovered in. This will then be used to compare the exploration patterns of the agents throughout the training process. Comparing which states are discovered by which agents at what time
+will give insight into if or when the agents started to converge to the same policies. In addition, it will provide data to evaluate if parallel exploration of the state space provides value to learning. 
 
 
 
