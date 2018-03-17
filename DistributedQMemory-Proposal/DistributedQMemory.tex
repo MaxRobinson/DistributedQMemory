@@ -21,6 +21,7 @@
 \maketitle
 
 \begin{abstract}
+
 \end{abstract}
 
 \section{Introduction}
@@ -42,7 +43,7 @@ The constraint of a lone agent acting sequentially can create situations where t
 To combat this, researchers have focused on ways to adapt these reinforcement learning algorithm to run in parallel to decrease the amount of time it takes a single agent to learn. 
 
 % maybe add? 
-A lot of research recently has been around speeding up Deep NN for RL such as DQN and others. Quite a few papers have suggested ways of parallelizing both the computation for these methods as well as distributing actors and learners to run in parallel, which send back gradients to be used to update a centralized parameter store. 
+A lot of research recently has been around speeding up Deep Neural Networks for RL such as DQN and others. Quite a few papers have suggested ways of parallelizing both the computation for these methods as well as distributing actors and learners to run in parallel, which send back gradients to be used to update a centralized parameter store. 
 
 I propose the we step back and explore a slightly more simplistic model of distributed RL using Q-learning with a Q-value database to explore the effects of a full combination of states and the multiple affects of distributing learners, such as state exploration rates, effects of learner contributions at different stages of learning, and different models for updating the distributed learners and their effect on exploration and performance. 
 %maybe add? ^^^
@@ -58,6 +59,18 @@ I hypothesize that in using this distributed algorithm, there will be an increas
 
 \section{Previous Work}
 \label{Literature Survey}
+Q-Learning \cite{watkins} has been a foundational algorithm in reinforcement learning, especially after q-learning was shown to have optimal convergence in the limit \cite{qlearning}. Very soon after this, asynchronous methods of Q-learning were being explored.  
+
+\cite{Tsitsiklis1994} studied if Q-learning would still keep it's optimal convergence property in an asynchronous setting. The results showed that the Q-learning algorithm does continue to keep this convergence guarantee in an asynchronous setting, given that old information is eventually discarded through the update process, along with a few other conditions. 
+
+More recently there has been a flurry of work done in parallelizing reinforcement learning algorithms. \cite{MANNION2015956} used a distributed Q-learning algorithm with multiple agents and environments to learn in. A every time step the agents update a global Q Matrix in accordance with the Q-learning update equation. 
+
+In addition to using a tabular implementation of Q-learning, function approximation versions using deep neural networks, such as DQN \cite{Mnih2013}, have also explored asynchronous and distributed architectures for learning. 
+
+The General Reinforcement Learning Architecture (Gorila) by (Nair et al., 2015) uses a general, massively distributed architecture of agent, and environments to learn. Each agent in Gorila has its own environment, a copy of the model which is periodically update, a separate replay memory and a learner that aims to learn using a DQN (Mnih et al., 2015). The learner samples data from the memory replay and computes the gradients for the parameters, which are then sent to a centralized parameter server. The parameter server then updates a central copy of the model based on gradients. 
+
+A3C developed by (Minh et al. 2016) collapses Gorila onto a single machine, using multiple processors to parallelize the agents actions in an environment. A3C similarly computes gradients for each agent's model at each time step, locally, but accumulates these gradients over a series of time steps before updating the central model. This aims to balance computational efficiency with data efficiency. 
+
 
 \section{Approach}
 \label{Approach}

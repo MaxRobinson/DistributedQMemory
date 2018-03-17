@@ -15,7 +15,65 @@
 	acmid = {203343},
 	publisher = {ACM},
 	address = {New York, NY, USA},
-} 
+}
+
+@InProceedings{A3C,
+	title = 	 {Asynchronous Methods for Deep Reinforcement Learning},
+	author = 	 {Volodymyr Mnih and Adria Puigdomenech Badia and Mehdi Mirza and Alex Graves and Timothy Lillicrap and Tim Harley and David Silver and Koray Kavukcuoglu},
+	booktitle = 	 {Proceedings of The 33rd International Conference on Machine Learning},
+	pages = 	 {1928--1937},
+	year = 	 {2016},
+	editor = 	 {Maria Florina Balcan and Kilian Q. Weinberger},
+	volume = 	 {48},
+	series = 	 {Proceedings of Machine Learning Research},
+	address = 	 {New York, New York, USA},
+	month = 	 {20--22 Jun},
+	publisher = 	 {PMLR},
+	pdf = 	 {http://proceedings.mlr.press/v48/mniha16.pdf},
+	url = 	 {http://proceedings.mlr.press/v48/mniha16.html},
+	abstract = 	 {We propose a conceptually simple and lightweight framework for deep reinforcement learning that uses asynchronous gradient descent for optimization of deep neural network controllers. We present asynchronous variants of four standard reinforcement learning algorithms and show that parallel actor-learners have a stabilizing effect on training allowing all four methods to successfully train neural network controllers. The best performing method, an asynchronous variant of actor-critic, surpasses the current state-of-the-art on the Atari domain while training for half the time on a single multi-core CPU instead of a GPU. Furthermore, we show that asynchronous actor-critic succeeds on a wide variety of continuous motor control problems as well as on a new task of navigating random 3D mazes using a visual input.}
+}
+ 
+
+@article{Gorila,
+	author    = {Arun Nair and 
+	Praveen Srinivasan and
+	Sam Blackwell and
+	Cagdas Alcicek and
+	Rory Fearon and
+	Alessandro De Maria and
+	Vedavyas Panneershelvam and
+	Mustafa Suleyman and
+	Charles Beattie and
+	Stig Petersen and
+	Shane Legg and
+	Volodymyr Mnih and
+	Koray Kavukcuoglu and
+	David Silver},
+	title     = {Massively Parallel Methods for Deep Reinforcement Learning},
+	journal   = {CoRR},
+	volume    = {abs/1507.04296},
+	year      = {2015},
+	url       = {http://arxiv.org/abs/1507.04296},
+	archivePrefix = {arXiv},
+	eprint    = {1507.04296},
+	timestamp = {Wed, 07 Jun 2017 14:40:51 +0200},
+	biburl    = {https://dblp.org/rec/bib/journals/corr/NairSBAFMPSBPLM15},
+	bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@incollection{Mnih2013,
+	title = {Playing Atari With Deep Reinforcement Learning},
+	author = {Volodymyr Mnih 
+	and Koray Kavukcuoglu 
+	and David Silver 
+	and Alex Graves 
+	and Ioannis Antonoglou 
+	and Daan Wierstra 
+	and Martin Riedmiller},
+	booktitle = {NIPS Deep Learning Workshop},
+	year = {2013}
+}
 
 @Article{Mnih2015,
 	author={Mnih, Volodymyr
@@ -93,7 +151,7 @@
 	isbn      = {0262193981}
 )
 
-@InProceedings(Grounds,
+@InProceedings(Grounds2008,
 	author		="Grounds, Matthew and Kudenko, Daniel",
 	editor		="Tuyls, Karl	and Nowe, Ann and Guessoum, Zahia and Kudenko, Daniel",
 	title		="Parallel Reinforcement Learning with Linear Function Approximation",
@@ -105,6 +163,20 @@
 	abstract	="In this paper, we investigate the use of parallelization in reinforcement learning (RL), with the goal of learning optimal policies for single-agent RL problems more quickly by using parallel hardware. Our approach is based on agents using the SARSA($\lambda$) algorithm, with value functions represented using linear function approximators. In our proposed method, each agent learns independently in a separate simulation of the single-agent problem. The agents periodically exchange information extracted from the weights of their approximators, accelerating convergence towards the optimal policy. We develop three increasingly efficient versions of this approach to parallel RL, and present empirical results for an implementation of the methods on a Beowulf cluster.",
 	isbn		="978-3-540-77949-0"
 )
+
+@article{MANNION2015956,
+	title = "Parallel Reinforcement Learning for Traffic Signal Control",
+	journal = "Procedia Computer Science",
+	volume = "52",
+	pages = "956 - 961",
+	year = "2015",
+	note = "The 6th International Conference on Ambient Systems, Networks and Technologies (ANT-2015), the 5th International Conference on Sustainable Energy Information Technology (SEIT-2015)",
+	issn = "1877-0509",
+	doi = "https://doi.org/10.1016/j.procs.2015.05.172",
+	url = "http://www.sciencedirect.com/science/article/pii/S1877050915009722",
+	author = "Patrick Mannion and Jim Duggan and Enda Howley",
+	keywords = "Reinforcement Learning, Parallel Learning, Multi Agent Systems, Intelligent Transportation Systems, Adaptive Traffic Signal Control, Smart Cities"
+}
 
 @misc{gym,
 	Author = {Greg Brockman and Vicki Cheung and Ludwig Pettersson and Jonas Schneider and John Schulman and Jie Tang and Wojciech Zaremba},
