@@ -2,13 +2,13 @@
 \usepackage{jair, theapa, rawfonts}
 
 %\jairheading{1}{2018}{}{}{}
-\ShortHeadings{Distributed Q-Memory: A Democratic Memory}
+\ShortHeadings{Distributed Q-Learning (DQL)}
 {Robinson}
 \firstpageno{1}
 
 \begin{document}
 
-\title{Distributed Q-Memory: A Democratically Assembled Memory (Proposal)}
+\title{Distributed Q-Learning: A Democratic Learning Process (Proposal)}
 
 \author{\name Max Robinson \email max.robinson@jhu.edu \\
        \addr Johns Hopkins University,\\
@@ -21,51 +21,42 @@
 \maketitle
 
 \begin{abstract}
-
+This proposal suggests studying a new distributed method for reinforcement learning using Q-learning. Reinforcement learning problems generally take a large amount of data and time to reach optimal performance. Early iterations of Q-learning used a single agent for the entire learning process. Since then, asynchronous and distributed reinforcement learning algorithms and frame works have been suggested. The proposed method to study is a distributed Q-learning implementation (DQL). It uses multiple agent-environment pairs with local parameters to learn independently, then update a central Q-Memory. The hypothesis is that the distributed nature of the algorithm will lead to an increased learning rate and a decreased training time to achieve equal or better performance than a standard single Q-learning agent. To test this hypothesis, it is suggested that the algorithm be tested on three different environments in the OpenAI gym library, and the learning rates for differing numbers of parallel agents recorded and compared to the single agent model. 
 \end{abstract}
 
 \section{Introduction}
 \label{Introduction}
 Reinforcement learning can be described simply as the learning process of an agent in an environment trying to reach a goal. 
-The agent learns by attempting to maximize a reward. The learner has no prior knowledge of the environment and does not know 
-which actions to take when. The act of maximizing the reward is the learning process.
+The agent learns by attempting to maximize a reward. In some situations the learner has very little prior knowledge of the environment. 
+The act of maximizing the reward is the learning process.
 
-Since Reinforcement learning requires a $state \to action \to state'$ loop, the learning process for that agent is inherently sequential. 
-As a result in large state spaces or complex games, training can be slow. A single agent must often experience many iterations of maximizing 
-a reward in order to learn even a more simple environment.
+Reinforcement learning typically requires an agent to follow a $state \to action \to state'$ loop. As a result, the learning process is inherently sequential. 
+For large state spaces or complex environments, this process can be slow. A single agent must often experience many iterations of maximizing 
+a reward in order to learn in even a simple environment.
 
 A famous example of Reinforcement Learning is Tesauro's TD-Gammon agent.
 The best performing agent required 1,500,000 training games to beat one of the best Backgammon players at the time \cite{Tesauro:1995:TDL:203330.203343}.
-As a more modern example Mnih et al. developed an algorithm to play Atari 2600 video games called DQN (Mnih et al. 2015). To learn to play each game at a human level or higher
-50 million frames were required to train an agent for each game and total including all 49 games in the study about 38 days of game experience. 
+As a more modern example, (Mnih et al.) developed an algorithm to play Atari 2600 video games called DQN (Mnih et al. 2015). To learn to play each game at a human level or higher,
+50 million frames were required to train an agent for each game. Total training on all 49 games in the study took about 38 days of game experience. 
 
 The constraint of a lone agent acting sequentially can create situations where training an agent to learn a task can take an exorbitant amount of time. 
 To combat this, researchers have focused on ways to adapt these reinforcement learning algorithm to run in parallel to decrease the amount of time it takes a single agent to learn. 
 
-% maybe add? 
-A lot of research recently has been around speeding up Deep Neural Networks for RL such as DQN and others. Quite a few papers have suggested ways of parallelizing both the computation for these methods as well as distributing actors and learners to run in parallel, which send back gradients to be used to update a centralized parameter store. 
+Recent research has studied speeding up Deep Neural Networks for RL such as DQN (Mnih et al., 2013) and others. Quite a few papers have suggested ways of parallelizing both the computation for these methods as well as distributing actors and learners to run in parallel, which send back gradients to be used to update a centralized parameter store. 
 
-I propose the we step back and explore a slightly more simplistic model of distributed RL using Q-learning with a Q-value database to explore the effects of a full combination of states and the multiple affects of distributing learners, such as state exploration rates, effects of learner contributions at different stages of learning, and different models for updating the distributed learners and their effect on exploration and performance. 
-%maybe add? ^^^
+This proposal suggests a step back to explore a slightly more simplistic model of distributed reinforcement learning using Q-learning. It suggests a parallelized and distributed version of the Q-learning algorithm using a traditional Q-Memory, here on in referred to as Distributed Q-learning (DQL). DQL, similar other distributed reinforcement learning approaches, uses multiple separate agent and environments with local copies of parameters and memory to learn, and has a centralized main Q-Memory. Different from other algorithms, however, DQL sends raw Q-values to the Centralize memory which are then combined with the existing values. The centralized Q-memory then updates values, using a linear combination of Q-values and hyper parameters explained in Section \ref{Approach}. An advantage to this approach is that the traditional Q-learning algorithm is being leveraged. This means that the optimality convergence guarantees of Q-learning, even in an asynchronous settings are likely to still hold true.
 
-To add to these works of research I suggest a parallelized and distributed version of the Q-learning algorithm using a traditional Q-Memory, Distributed Q-learning (DQL).
-In this distributed form of Q-learning, there is a centralized Q-Memory that is updated by agents that are running in parallel. Each separate agents runs with their own copy of the environment and a Q-memory. Each agent then learns as usual according to the Q-learning algorithm \cite{watkins}. However, every so often an agent will send updates to the centralized 
-Q-Memory. 
-%These updates are the state's and their q-values that were modified since the last update. 
-The centralized Q-memory then is calculates updates to its values, using a linear combination of q-values and hyper parameters explained in Section \ref{Approach}. 
-
-%I hypothesize that in distributing the learning process amongst multiple learners and aggregating their experiences
-I hypothesize that in using this distributed algorithm, there will be an increase in the learning rate of a learner using the centralized Q-memory when compared to a single Q-learning agent, as the number of parallel agents increases. This increased learning rate will reduce the total number of epochs per single agent to achieve similar or better performance. This will also likely reducing total wall time it takes to train. 
+It is hypothesized that in using this distributed algorithm, there will be an increase in the learning rate of a learner using the centralized Q-memory when compared to a single Q-learning agent, as the number of parallel agents increases. This increased learning rate will reduce the total number of epochs compared to a single agent to achieve similar or better performance. This will also likely reduce the total wall time it takes to train. 
 
 \section{Previous Work}
 \label{Literature Survey}
-Q-Learning \cite{watkins} has been a foundational algorithm in reinforcement learning, especially after q-learning was shown to have optimal convergence in the limit \cite{qlearning}. Very soon after this, asynchronous methods of Q-learning were being explored.  
+Q-Learning \cite{watkins} has been a foundational algorithm in reinforcement learning, especially after it was shown to have optimal convergence in the limit \cite{qlearning}. Very soon after this, asynchronous methods of Q-learning were being explored.  
 
 \cite{Tsitsiklis1994} studied if Q-learning would still keep it's optimal convergence property in an asynchronous setting. The results showed that the Q-learning algorithm does continue to keep this convergence guarantee in an asynchronous setting, given that old information is eventually discarded through the update process, along with a few other conditions. 
 
-More recently there has been a flurry of work done in parallelizing reinforcement learning algorithms. \cite{MANNION2015956} used a distributed Q-learning algorithm with multiple agents and environments to learn in. A every time step the agents update a global Q Matrix in accordance with the Q-learning update equation. 
+More recently there has been a flurry of work done in parallelizing reinforcement learning algorithms. \cite{MANNION2015956} used a distributed Q-learning algorithm with multiple agents and environments to learn in, applied to traffic signal control. In their algorithm, at every time step the agents update a global Q Matrix in accordance with the Q-learning update equation. 
 
-In addition to using a tabular implementation of Q-learning, function approximation versions using deep neural networks, such as DQN \cite{Mnih2013}, have also explored asynchronous and distributed architectures for learning. 
+In addition to using a tabular implementation of Q-learning, function approximation versions using deep neural networks, such as DQN (Mnih et al., 2013), have also explored asynchronous and distributed architectures for learning. 
 
 The General Reinforcement Learning Architecture (Gorila) by (Nair et al., 2015) uses a general, massively distributed architecture of agent, and environments to learn. Each agent in Gorila has its own environment, a copy of the model which is periodically update, a separate replay memory and a learner that aims to learn using a DQN (Mnih et al., 2015). The learner samples data from the memory replay and computes the gradients for the parameters, which are then sent to a centralized parameter server. The parameter server then updates a central copy of the model based on gradients. 
 
@@ -101,7 +92,7 @@ Q_c(s,a) = (1-\frac{\alpha_{c}^{2}}{\alpha_i})Q_c(s,a) + \frac{\alpha_{c}^{2}}{\
 
 After updates to $Q_c$ are complete, there are two variations that will be explored in this experiment for updating the local agent $A_i$. 
 The first variation will send back a set of updated values from $Q_c$ for just the set of states sent from $A_i$, $Set_{q_i}$. The agent will 
-then replace any local values with those from $Q_c$ This has the affect of reconciling just the states that local agent has updated recently 
+then replace any local values with those from $Q_c$. This has the affect of reconciling just the states that local agent has updated recently 
 with possible updates from other agents. 
 The second variation, dubbed DQL-All, overwrites $Q_i$ with the entire $Q_c$ memory. This provides information from other agents to a local agent and homogenizes 
 the $Q_i$s of the different agents. In this variation, states that were explored by one agent would then be shared with other agents even if that 
@@ -140,7 +131,8 @@ In addition to traditional performance metrics, the number of newly explored sta
 the state was discovered in. This will then be used to compare the exploration patterns of the agents throughout the training process. Comparing which states are discovered by which agents at what time
 will give insight into if or when the agents started to converge to the same policies. In addition, it will provide data to evaluate if parallel exploration of the state space provides value to learning. 
 
-
+\subsection{Conclusion}
+This proposal suggests studying a new variation of distributed reinforcement learning using Q-learning as its foundation. Using multiple individual agent-environment pairs with local parameters and memory along with centralized Q-Memory asynchronously update, it is hypothesized that DQL will decrease the training time required to meet or out perform a standard Q-learning agent. The algorithm will be tested on three different environments with learning rates captured and compared with a single agent Q-learning algorithm to see if this hypothesis is true.
 
 \vskip 0.2in
 \bibliography{DistributedQMemory}
