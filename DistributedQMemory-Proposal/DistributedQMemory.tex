@@ -30,14 +30,14 @@ Reinforcement learning can be described simply as the learning process of an age
 The agent learns by attempting to maximize a reward. In some situations the learner has very little prior knowledge of the environment. 
 The act of maximizing the reward is the learning process.
 
-Reinforcement learning typically requires an agent to follow a $state \to action \to state'$ loop. As a result, the learning process is inherently sequential. 
+Reinforcement learning typically requires an agent to follow a $state \to action \to state'$ loop. As a result, the learning process is also typically sequential. 
 For large state spaces or complex environments, this process can be slow. A single agent must often experience many iterations of maximizing 
 a reward in order to learn in even a simple environment.
 
 A famous example of Reinforcement Learning is Tesauro's TD-Gammon agent.
 The best performing agent required 1,500,000 training games to beat one of the best Backgammon players at the time \cite{Tesauro:1995:TDL:203330.203343}.
-As a more modern example, (Mnih et al.) developed an algorithm to play Atari 2600 video games called DQN (Mnih et al. 2015). To learn to play each game at a human level or higher,
-50 million frames were required to train an agent for each game. Total training on all 49 games in the study took about 38 days of game experience. 
+As a more modern example, (Mnih et al. 2013) developed an algorithm to play Atari 2600 video games called DQN. To learn to play each game at a human level or higher,
+50 million frames were required to train an agent for each game. Total training on all 49 games in the study took about 38 days of game experience (Mnih et al. 2015). 
 
 The constraint of a lone agent acting sequentially can create situations where training an agent to learn a task can take an exorbitant amount of time. 
 To combat this, researchers have focused on ways to adapt these reinforcement learning algorithm to run in parallel to decrease the amount of time it takes a single agent to learn. 
@@ -58,9 +58,9 @@ More recently there has been a flurry of work done in parallelizing reinforcemen
 
 In addition to using a tabular implementation of Q-learning, function approximation versions using deep neural networks, such as DQN (Mnih et al., 2013), have also explored asynchronous and distributed architectures for learning. 
 
-The General Reinforcement Learning Architecture (Gorila) by (Nair et al., 2015) uses a general, massively distributed architecture of agent, and environments to learn. Each agent in Gorila has its own environment, a copy of the model which is periodically update, a separate replay memory and a learner that aims to learn using a DQN (Mnih et al., 2015). The learner samples data from the memory replay and computes the gradients for the parameters, which are then sent to a centralized parameter server. The parameter server then updates a central copy of the model based on gradients. 
+The General Reinforcement Learning Architecture (Gorila) by \cite{Gorila} uses a general, massively distributed architecture of agent, and environments to learn. Each agent in Gorila has its own environment, a copy of the model which is periodically update, a separate replay memory and a learner that aims to learn using a DQN (Mnih et al., 2015). The learner samples data from the memory replay and computes the gradients for the parameters, which are then sent to a centralized parameter server. The parameter server then updates a central copy of the model based on gradients. 
 
-A3C developed by (Minh et al. 2016) collapses Gorila onto a single machine, using multiple processors to parallelize the agents actions in an environment. A3C similarly computes gradients for each agent's model at each time step, locally, but accumulates these gradients over a series of time steps before updating the central model, every so often. This aims to balance computational efficiency with data efficiency. 
+A3C developed by (Mnih et al. 2016) collapses Gorila onto a single machine, using multiple processors to parallelize the agents actions in an environment. A3C similarly computes gradients for each agent's model at each time step, locally, but accumulates these gradients over a series of time steps before updating the central model, every so often. This aims to balance computational efficiency with data efficiency. 
 
 
 \section{Approach}
