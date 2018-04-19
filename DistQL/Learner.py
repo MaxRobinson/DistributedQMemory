@@ -15,5 +15,5 @@ class Learner(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def update(self, observation, previous_observation, reward):
+    def update(self, observation, previous_observation, action_taken, reward):
         pass
