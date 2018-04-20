@@ -20,7 +20,6 @@ class QLearner(Learner):
 
         self.episode_count = 0
 
-
     def learn(self):
         pass
 
@@ -105,11 +104,21 @@ class QLearner(Learner):
 
         return max_value
 
-    def save(self, count):
+    def save(self, location):
         """
         Saves the Q state
         """
-        output = open('q_save_file_normal_large_world{}.txt'.format(count), 'wb')
-        pickle.dump(self.q, output)
-        output.close()
+        # output = open('q_save_file_normal_large_world{}.txt'.format(count), 'wb')
+        with open(location, 'wb') as output:
+            pickle.dump(self.q, output)
+
+    def load(self, location):
+        """
+        Saves the Q state
+        """
+        with open(location, 'rb') as output:
+            self.q = pickle.load(output)
+
+    def set_model(self, model):
+        self.q = model
 

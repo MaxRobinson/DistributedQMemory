@@ -17,3 +17,11 @@ class Learner(metaclass=ABCMeta):
     @abstractmethod
     def update(self, observation, previous_observation, action_taken, reward):
         pass
+
+    @abstractmethod
+    def save(self, location):
+        pass
+
+    @abstractmethod
+    def load(self, location):
+        pass
