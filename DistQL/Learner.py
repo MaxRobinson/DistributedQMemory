@@ -19,6 +19,10 @@ class Learner(metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    def decay(self):
+        pass
+
+    @abstractmethod
     def save(self, location):
         pass
 

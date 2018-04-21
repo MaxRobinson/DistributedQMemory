@@ -23,6 +23,11 @@ class QLearner(Learner):
     def learn(self):
         pass
 
+    def decay(self):
+        self.epsilon *= self.decay_rate
+        # self.init_alpha *= self.decay_rate
+
+
     def update(self, observation, previous_observation, action_taken, reward):
 
         """
@@ -66,6 +71,7 @@ class QLearner(Learner):
 
         return action
 
+    # <editor-fold desc="Helpers">
     def select_random_move(self, possible_actions: tuple) -> tuple:
         """
         Helper function to select a random move.
@@ -103,6 +109,7 @@ class QLearner(Learner):
                 max_value = q[state][action]
 
         return max_value
+    # </editor-fold>
 
     def save(self, location):
         """
