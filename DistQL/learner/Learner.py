@@ -23,6 +23,18 @@ class Learner(metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    def get_value(self, observation, action) -> tuple:
+        pass
+
+    @abstractmethod
+    def get_last_updated_states(self):
+        pass
+
+    @abstractmethod
+    def reset_last_updated_states(self):
+        pass
+
+    @abstractmethod
     def save(self, location):
         pass
 

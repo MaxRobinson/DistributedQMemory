@@ -1,9 +1,7 @@
-from abc import ABCMeta
-
 import numpy
 import pandas
 
-from StateBuilder import StateBuilder
+from StateBuilder.StateBuilder import StateBuilder
 
 
 class StateBuilderCartPole(StateBuilder):

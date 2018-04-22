@@ -1,6 +1,6 @@
-from Controller import Controller
-from QLearner import QLearner
-from StateBuilderCartPole import StateBuilderCartPole
+from controller.Controller import Controller
+from learner.QLearner import QLearner
+from StateBuilder.StateBuilderCartPole import StateBuilderCartPole
 
 import numpy as np
 
@@ -17,7 +17,7 @@ def main():
     cart_pole_ctrl.set_learner(learner)
 
     running_cumulative_reward = []
-    for _ in range(5):
+    for _ in range(1):
         cumulative_reward, num_steps = cart_pole_ctrl.train(number_epochs=2000, save_location='models/taxi-v3.model')
         running_cumulative_reward.append(cumulative_reward)
 

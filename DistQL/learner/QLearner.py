@@ -1,11 +1,15 @@
 import pickle
 import random
 import sys
+from typing import Tuple, Set
 
-from Learner import Learner
+from learner.Learner import Learner
 
 
 class QLearner(Learner):
+    QVALUE_INDEX = 0
+    ALPHA_INDEX = 1
+
     def __init__(self, actions, epsilon=.99, init_alpha=.99, gamma=.9, decay_rate=.99):
         super(QLearner, self).__init__()
         self.epsilon = epsilon
@@ -20,13 +24,13 @@ class QLearner(Learner):
 
         self.episode_count = 0
 
+        self.last_updated_states = set()
+
     def learn(self):
         pass
 
     def decay(self):
         self.epsilon *= self.decay_rate
-        # self.init_alpha *= self.decay_rate
-
 
     def update(self, observation, previous_observation, action_taken, reward):
 
@@ -45,12 +49,17 @@ class QLearner(Learner):
             self.q[previous_observation] = {}
 
         if action_taken not in self.q[previous_observation]:
-            self.q[previous_observation][action_taken] = reward
+            self.q[previous_observation][action_taken] = [reward, self.init_alpha]
 
-        current_q_value = self.q[previous_observation][action_taken]
+        current_q_value = self.q[previous_observation][action_taken][QLearner.QVALUE_INDEX]
 
-        self.q[previous_observation][action_taken] = \
-            current_q_value + self.init_alpha * (reward + (self.gamma * self.get_max_value(observation, self.q)) - current_q_value)
+        alpha = self.q[previous_observation][action_taken][QLearner.ALPHA_INDEX]
+        self.q[previous_observation][action_taken][QLearner.QVALUE_INDEX] = \
+            current_q_value + alpha * (reward + (self.gamma * self.get_max_value(observation, self.q)) - current_q_value)
+
+        self.decay_alpha(previous_observation, action_taken)
+
+        self.last_updated_states.add((previous_observation, action_taken))
 
         return self.q
 
@@ -90,9 +99,9 @@ class QLearner(Learner):
             return None
 
         for action in q[current_state]:
-            if q[current_state][action] > max_value:
+            if q[current_state][action][QLearner.QVALUE_INDEX] > max_value:
                 max_arg = action
-                max_value = q[current_state][action]
+                max_value = q[current_state][action][QLearner.QVALUE_INDEX]
 
         return max_arg
 
@@ -105,11 +114,32 @@ class QLearner(Learner):
         if state not in q:
             return 0
         for action in q[state]:
-            if q[state][action] > max_value:
-                max_value = q[state][action]
+            if q[state][action][QLearner.QVALUE_INDEX] > max_value:
+                max_value = q[state][action][QLearner.QVALUE_INDEX]
 
         return max_value
+
+    def decay_alpha(self, state, action):
+        self.q[state][action][QLearner.ALPHA_INDEX] *= self.decay_rate
+
     # </editor-fold>
+
+    def get_value(self, state, action) -> tuple:
+        q_and_alpha = [None, None]
+        try:
+            q_and_alpha = self.q[state][action]
+        except Exception as e:
+            print("Exception getting value for Q table")
+            print(e)
+            q_and_alpha = [None, None]
+
+        return tuple(q_and_alpha)
+
+    def get_last_updated_states(self) -> Set:
+        return self.last_updated_states
+
+    def reset_last_updated_states(self):
+        self.last_updated_states = set()
 
     def save(self, location):
         """

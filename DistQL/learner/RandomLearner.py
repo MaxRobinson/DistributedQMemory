@@ -1,4 +1,4 @@
-from Learner import Learner
+from learner.Learner import Learner
 
 
 class RandomLearner(Learner):

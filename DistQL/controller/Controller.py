@@ -1,20 +1,21 @@
 from copy import copy
 
-from Learner import Learner
-from StateBuilder import StateBuilder
-from RandomLearner import RandomLearner
+import requests
+import json
+
+from learner.Learner import Learner
+from StateBuilder.StateBuilder import StateBuilder
+from learner.RandomLearner import RandomLearner
 import logging
 import gym
+import numpy as np
+
 
 logger = logging.getLogger(__name__)
 
 
 class Controller:
-    def __init__(self, learner: Learner = None, env_id: str=None, state_builder: StateBuilder=None):
-        # if learner is None:
-        #     logger.error("No Learner provided, not initializing")
-        #     return
-        # else:
+    def __init__(self, learner: Learner = None, env_id: str=None, state_builder: StateBuilder=None, update_freq: int=10):
         self.learner = learner
 
         if env_id is None:
@@ -29,6 +30,8 @@ class Controller:
 
         self.state_builder = state_builder
 
+        self.update_freq = update_freq
+
     def train(self, number_epochs: int=100, save_location: str='', render: bool=False):
         cumulative_reward = []
         num_steps = []
@@ -41,9 +44,14 @@ class Controller:
             cumulative_reward.append(cumulative)
             num_steps.append(steps)
 
+            # Save every 100
             print("Epoch: {}".format(_))
             if _ % 100 == 0:
                 self.save(save_location)
+
+            # Update Server based on Update_frequency
+            if _ % self.update_freq == 0:
+                self.update_server()
 
         return cumulative_reward, num_steps
 
@@ -94,8 +102,6 @@ class Controller:
         observation = self.env.reset()
         done = False
 
-        # self.learner.set_model(model)
-
         while not done:
             if render:
                 self.env.render()
@@ -111,7 +117,41 @@ class Controller:
             # Step
             observation, reward, done, info = self.env.step(action)
 
+    def update_server(self):
+        # body['q_updates'] = [{'state':state, 'action'=action, 'alpha'=alpha, 'value'=value}, ]
+        body = {}
 
+        # a list of (state, action) tuples
+        states_to_send = self.learner.get_last_updated_states()
+
+        q_updates = []
+        for state, action in states_to_send:
+            value, alpha = self.learner.get_value(state, action)
+
+            if type(state) == np.int64:
+                state = state.item()
+
+            state_action_update = {
+                "state": state,
+                "action": action,
+                "alpha": alpha,
+                "value": value
+            }
+
+            # try:
+            #     json.dumps(state_action_update)
+            # except:
+            #     print(state_action_update)
+
+            q_updates.append(state_action_update)
+
+        body["q_updates"] = q_updates
+
+        r = requests.post('http://localhost:5000/update/q', json=body)
+
+        print(r)
+
+    # <editor-fold desc="Helpers">
     def get_action_space(self):
         return range(self.env.action_space.n)
 
@@ -126,6 +166,7 @@ class Controller:
 
     def load(self, file_location):
         self.learner.load(file_location)
+    # </editor-fold>
 
 if __name__ == "__main__":
     ctrl = Controller(learner=RandomLearner(), env_id='LunarLander-v2')
