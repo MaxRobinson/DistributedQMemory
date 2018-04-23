@@ -15,7 +15,8 @@ logger = logging.getLogger(__name__)
 
 
 class Controller:
-    def __init__(self, learner: Learner = None, env_id: str=None, state_builder: StateBuilder=None, update_freq: int=10):
+    def __init__(self, learner: Learner = None, env_id: str=None, state_builder: StateBuilder=None, update_freq: int=10,
+                 id=1):
         self.learner = learner
 
         if env_id is None:
@@ -29,8 +30,8 @@ class Controller:
             raise ex
 
         self.state_builder = state_builder
-
         self.update_freq = update_freq
+        self.id = id
 
     def train(self, number_epochs: int=100, save_location: str='', render: bool=False):
         cumulative_reward = []
