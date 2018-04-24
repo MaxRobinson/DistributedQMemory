@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class Controller:
     def __init__(self, learner: Learner = None, env_id: str=None, state_builder: StateBuilder=None, update_freq: int=10,
-                 id=1):
+                 id: int=1):
         self.learner = learner
 
         if env_id is None:
