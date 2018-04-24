@@ -19,10 +19,9 @@ class QServer:
     ALPHA_INDEX = 1
     VALUE_INDEX = 0
     LEARNING_DECAY = .99
+    INITIAL_ALPHA = .99
 
     Q = {}
-
-    initial_alpha = .99
 
 
 class StateBuilderCache:
@@ -201,7 +200,7 @@ def update_q(states_to_update: list=None):
             QServer.Q[s] = {}
 
         if a not in QServer.Q[s]:
-            QServer.Q[s][a] = [0, QServer.initial_alpha]
+            QServer.Q[s][a] = [0, QServer.INITIAL_ALPHA]
 
         # perform actual update
         central_alpha = QServer.Q[s][a][QServer.ALPHA_INDEX]
