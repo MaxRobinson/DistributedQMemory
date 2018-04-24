@@ -83,6 +83,8 @@ class State:
         State.num_finished_agents = 0
         State.num_updates = 0
         State.complete = False
+        State.experimental_results = ExperimentResult()
+        State.reference_results = ReferenceResult()
 
 
 #### Routes ####
