@@ -135,6 +135,22 @@ class QLearner(Learner):
 
         return tuple(q_and_alpha)
 
+    def set_value(self, state, action, value, alpha):
+        try:
+            if state not in self.q:
+                self.q[state] = {}
+
+            if action not in self.q[state]:
+                # If we've never seen this state before, set the value an alpha
+                self.q[state][action] = [value, alpha]
+            else:
+                # if we've seen this state and action only update the value, not the alpha
+                self.q[state][action][QLearner.QVALUE_INDEX] = value
+        except Exception as e:
+            print("Exception Setting Value for Q table")
+            print(e)
+        return
+
     def get_last_updated_states(self) -> Set:
         return self.last_updated_states
 

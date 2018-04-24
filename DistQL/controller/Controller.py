@@ -165,7 +165,7 @@ class Controller:
 
         r = requests.post('http://localhost:5000/update/q', json=body)
 
-        print(r)
+        self.update_q_from_server_response(r)
 
     def submit_results(self, cumulative_reward: list=[], num_steps: list=[], num_epochs: int=10):
         logger.info("Agent {}: Submitting Results".format(self.id))
@@ -192,6 +192,23 @@ class Controller:
     # </editor-fold>
 
     # <editor-fold desc="Helpers">
+    def update_q_from_server_response(self, response):
+        # body = {'updates': values}
+        # states_to_update: list=None
+        json_response = response.json()
+        states_to_update = json_response.get('updates')
+        # list of dicts
+        # dicts are {'state':state, 'action'=action, 'alpha'=alpha, 'value'=value}
+        for update in states_to_update:
+            s = update.get('state')
+            a = update.get('action')
+            update_value = float(update.get('value'))
+            alpha = float(update.get('alpha'))
+
+            self.learner.set_value(s, a, update_value, alpha)
+
+        pass
+
     def get_action_space(self):
         return range(self.env.action_space.n)
 

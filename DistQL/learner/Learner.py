@@ -27,6 +27,10 @@ class Learner(metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    def set_value(self, observation, action, value, alpha) -> None:
+        pass
+
+    @abstractmethod
     def get_last_updated_states(self):
         pass
 

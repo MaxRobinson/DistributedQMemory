@@ -23,6 +23,11 @@ class QServer:
 
     Q = {}
 
+    # This is a server mode that changes central servers are sent back to the workers in the response.
+    # If True, the entire QServer Q Values are sent to the workers
+    # If False, only the states the server updated from that worker are sent back.
+    DQL_ALL = False
+
 
 class StateBuilderCache:
     builders = {
@@ -100,7 +105,18 @@ def update_q_route():
     if State.num_updates % State.num_agents == 0:
         start_reference_aggregated_learner(env_name=State.env_name)
 
-    return json.dumps(QServer.Q)
+    values = []
+    if QServer.DQL_ALL:
+        values = get_all_central_q_values()
+    else:
+        values = get_central_q_values(body['q_updates'])
+
+    body = {
+        'updates': values
+    }
+    response = json.dumps(body)
+
+    return response
 
 
 @app.route('/experiment/start', methods=['POST'])
@@ -220,6 +236,42 @@ def update_q(states_to_update: list=None):
 
         # update central learning rate (decay learning rate for that (s,a)
         QServer.Q[s][a][QServer.ALPHA_INDEX] = central_alpha * QServer.LEARNING_DECAY
+
+
+def get_all_central_q_values():
+    values = []
+    # list of dicts
+    # dicts are {'state':state, 'action'=action, 'alpha'=alpha, 'value'=value}
+    for s in QServer.Q:
+        for a in QServer.Q[s]:
+            update = {
+                'state': s,
+                'action': a,
+                'value': QServer.Q[s][a][QServer.VALUE_INDEX],
+                'alpha': QServer.Q[s][a][QServer.ALPHA_INDEX]
+            }
+            values.append(update)
+
+    return values
+
+
+def get_central_q_values(states_to_update: list=None):
+    values = []
+    # list of dicts
+    # dicts are {'state':state, 'action'=action, 'alpha'=alpha, 'value'=value}
+    for update in states_to_update:
+        s = update.get('state')
+        a = update.get('action')
+
+        update = {
+            'state': s,
+            'action': a,
+            'value': QServer.Q[s][a][QServer.VALUE_INDEX],
+            'alpha': QServer.Q[s][a][QServer.ALPHA_INDEX]
+        }
+        values.append(update)
+
+    return values
 
 
 def start_workers(num_agents: int=1, env_name: str='', state_builder: StateBuilder=None, num_epochs: int= 2001,
