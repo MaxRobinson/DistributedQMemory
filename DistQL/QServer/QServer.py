@@ -43,7 +43,7 @@ class Results:
 class ExperimentResult:
     def __init__(self, num_agents: int=1):
         self.num_agents = num_agents
-        # agent_id : results
+        # agent_id : results.__dict__
         self.results = {}
 
 
@@ -99,7 +99,7 @@ def start_experiment():
     State.num_agents = num_agents
     State.experimental_results = ExperimentResult(num_agents=num_agents)
 
-    start_workers(num_agents, env_name, state_builder, update_frequency)
+    start_workers(num_agents, env_name, state_builder, num_epochs=2001, update_frequency=update_frequency)
 
     return 'Success'
 
@@ -116,7 +116,7 @@ def submit_results():
 
         result = Results(agent_id, num_epochs, cumulative_reward, num_steps)
 
-        State.experimental_results.results[agent_id] = result
+        State.experimental_results.results[agent_id] = result.__dict__
         State.num_finished_agents += 1
 
         if State.num_finished_agents == State.num_agents:
@@ -141,6 +141,12 @@ def clear_q():
 @app.route('/state', methods=['GET'])
 def get_state():
     return json.dumps(State.get_values())
+
+
+@app.route('/state/clear', methods=['GET'])
+def clear_state():
+    State.reset()
+    return 'Success'
 
 # <editor-fold desc="Helpers">
 def update_q(states_to_update: list=None):
@@ -178,7 +184,7 @@ def update_q(states_to_update: list=None):
 
 
 def start_workers(num_agents: int=1, env_name: str='', state_builder: StateBuilder=None, num_epochs: int= 2001,
-                  update_frequency: int=10):
+                  update_frequency:int=10):
 
     State.num_agents = num_agents
 

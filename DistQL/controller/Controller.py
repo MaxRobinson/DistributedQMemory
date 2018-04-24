@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class Controller:
     def __init__(self, learner: Learner = None, env_id: str=None, state_builder: StateBuilder=None, update_freq: int=10,
-                 id: int=1):
+                 id: int=1, communicate: bool=True):
         self.learner = learner
 
         if env_id is None:
@@ -32,6 +32,7 @@ class Controller:
         self.state_builder = state_builder
         self.update_freq = update_freq
         self.id = id
+        self.communicate = communicate
 
     def train(self, number_epochs: int=100, save_location: str='', render: bool=False):
         cumulative_reward = []
@@ -51,8 +52,11 @@ class Controller:
                 self.save(save_location)
 
             # Update Server based on Update_frequency
-            if _ % self.update_freq == 0:
+            if _ % self.update_freq == 0 and self.communicate:
                 self.update_server()
+
+        if self.communicate:
+            self.submit_results(cumulative_reward, num_steps, number_epochs)
 
         return cumulative_reward, num_steps
 
@@ -118,6 +122,7 @@ class Controller:
             # Step
             observation, reward, done, info = self.env.step(action)
 
+    # <editor-fold desc="Server Communication">
     def update_server(self):
         # body['q_updates'] = [{'state':state, 'action'=action, 'alpha'=alpha, 'value'=value}, ]
         body = {}
@@ -139,11 +144,6 @@ class Controller:
                 "value": value
             }
 
-            # try:
-            #     json.dumps(state_action_update)
-            # except:
-            #     print(state_action_update)
-
             q_updates.append(state_action_update)
 
         body["q_updates"] = q_updates
@@ -151,6 +151,20 @@ class Controller:
         r = requests.post('http://localhost:5000/update/q', json=body)
 
         print(r)
+
+    def submit_results(self, cumulative_reward: list=[], num_steps: list=[], num_epochs: int=10):
+        logger.info("Agent {}: Submitting Results".format(self.id))
+        body = {
+            'agent_id': self.id,
+            'num_epochs': num_epochs,
+            'cumulative_reward': cumulative_reward,
+            'num_steps': num_steps
+        }
+
+        r = requests.post('http://localhost:5000/experiment/submit_results', json=body)
+        print(r)
+
+    # </editor-fold>
 
     # <editor-fold desc="Helpers">
     def get_action_space(self):
