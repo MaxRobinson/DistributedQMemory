@@ -1,3 +1,4 @@
+import copy
 import json
 import threading
 import time
@@ -47,13 +48,23 @@ class ExperimentResult:
         self.results = {}
 
 
+class ReferenceResult:
+    def __init__(self):
+        self.num_epochs = 0
+        self.cumulative_reward = []
+        self.num_steps = []
+
+
 class State:
+    env_name = ''
     num_agents = 1
     num_finished_agents = 0
     num_updates = 0
     complete = False
 
     experimental_results = ExperimentResult()
+
+    reference_results = ReferenceResult()
 
     @staticmethod
     def get_values():
@@ -62,17 +73,20 @@ class State:
             'num_finished_agents': State.num_finished_agents,
             'num_updates': State.num_updates,
             'complete': State.complete,
-            'experimental_results': State.experimental_results.__dict__
+            'experimental_results': State.experimental_results.__dict__,
+            'reference_results': State.reference_results.__dict__
         }
 
     @staticmethod
     def reset():
+        State.env_name = ''
         State.num_agents = 1
         State.num_finished_agents = 0
         State.num_updates = 0
         State.complete = False
 
 
+#### Routes ####
 @app.route('/update/q', methods=['POST'])
 def update_q_route():
     # not error checking right now for json
@@ -80,6 +94,10 @@ def update_q_route():
     update_q(body['q_updates'])
 
     State.num_updates += 1
+
+    # Start A reference learner to track progress
+    if State.num_updates % State.num_agents == 0:
+        start_reference_aggregated_learner(env_name=State.env_name)
 
     return json.dumps(QServer.Q)
 
@@ -96,6 +114,7 @@ def start_experiment():
 
     # Modify Server State
     State.reset()
+    State.env_name = env_name
     State.num_agents = num_agents
     State.experimental_results = ExperimentResult(num_agents=num_agents)
 
@@ -121,9 +140,27 @@ def submit_results():
 
         if State.num_finished_agents == State.num_agents:
             State.complete = True
+            # run after all workers have stopped.
+            start_reference_aggregated_learner(env_name=State.env_name)
+
 
     except Exception as e:
         return 503
+
+    return 'Success'
+
+
+@app.route('/reference/results', methods=['POST'])
+def submit_reference_result():
+    body = request.get_json()
+
+    cumulative_reward_for_run = body.get('cumulative_reward')
+    num_steps_for_run = body.get('num_steps')
+
+    # Update state that is tracking reference results
+    State.reference_results.num_epochs += 1
+    State.reference_results.cumulative_reward.append(cumulative_reward_for_run)
+    State.reference_results.num_steps.append(num_steps_for_run)
 
     return 'Success'
 
@@ -147,6 +184,7 @@ def get_state():
 def clear_state():
     State.reset()
     return 'Success'
+
 
 # <editor-fold desc="Helpers">
 def update_q(states_to_update: list=None):
@@ -199,6 +237,25 @@ def start_workers(num_agents: int=1, env_name: str='', state_builder: StateBuild
         agent_thread = threading.Thread(target=controller.train,
                                         kwargs={"number_epochs": num_epochs, "save_location": '../models/{}-{}.model'.format(env_name, agent)})
         agent_thread.start()
+
+    return
+
+
+def start_reference_aggregated_learner(env_name: str=''):
+    state_builder = StateBuilderCache.builders.get(env_name, None)
+
+    controller = Controller(learner=None, env_id=env_name, state_builder=state_builder)
+
+    learner = QLearner(controller.get_action_space(), epsilon=0.1, init_alpha=.5, gamma=.9, decay_rate=.999)
+
+    # SET MODEL with copy of Server Model
+    learner.set_model(copy.deepcopy(QServer.Q))
+
+    controller.set_learner(learner)
+
+    agent_thread = threading.Thread(target=controller.run)
+    agent_thread.start()
+    print('Started Reference Learner')
 
     return
 # </editor-fold>

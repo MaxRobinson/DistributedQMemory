@@ -54,6 +54,8 @@ class Controller:
             # Update Server based on Update_frequency
             if _ % self.update_freq == 0 and self.communicate:
                 self.update_server()
+                # Ensure we are resetting states after sending updates for each learner
+                self.learner.reset_last_updated_states()
 
         if self.communicate:
             self.submit_results(cumulative_reward, num_steps, number_epochs)
@@ -107,6 +109,12 @@ class Controller:
         observation = self.env.reset()
         done = False
 
+        # used for evaluating a run
+        cumulative_reward = 0
+
+        # number of steps taken
+        num_steps = 0
+
         while not done:
             if render:
                 self.env.render()
@@ -121,6 +129,13 @@ class Controller:
 
             # Step
             observation, reward, done, info = self.env.step(action)
+
+            # update metrics
+            cumulative_reward += reward
+            num_steps += 1
+
+        if self.communicate:
+            self.submit_aggregated_run(cumulative_reward, num_steps)
 
     # <editor-fold desc="Server Communication">
     def update_server(self):
@@ -162,6 +177,16 @@ class Controller:
         }
 
         r = requests.post('http://localhost:5000/experiment/submit_results', json=body)
+        print(r)
+
+    def submit_aggregated_run(self, cumulative_reward: int=0, num_steps: int=0):
+        logger.info("Submitting Reference Run Results")
+        body = {
+            'cumulative_reward': cumulative_reward,
+            'num_steps': num_steps
+        }
+
+        r = requests.post('http://localhost:5000/reference/results', json=body)
         print(r)
 
     # </editor-fold>
