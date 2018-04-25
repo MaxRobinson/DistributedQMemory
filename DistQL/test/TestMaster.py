@@ -3,6 +3,7 @@ from learner.QLearner import QLearner
 from StateBuilder.StateBuilderCartPole import StateBuilderCartPole
 
 import numpy as np
+import scipy.stats
 
 import matplotlib.pyplot as plt
 
@@ -10,31 +11,46 @@ import matplotlib.pyplot as plt
 def main():
     # Taxi-v2
     # cart_pole_ctrl = Controller(None, 'CartPole-v1', StateBuilderCartPole())
-    cart_pole_ctrl = Controller(None, 'Taxi-v2', None)
-
-    learner = QLearner(cart_pole_ctrl.get_action_space(), epsilon=0.1, init_alpha=.5, gamma=.9, decay_rate=.999)
-
-    cart_pole_ctrl.set_learner(learner)
+    cart_pole_ctrl = Controller(None, 'Taxi-v2', None, communicate=False)
 
     running_cumulative_reward = []
-    for _ in range(1):
-        cumulative_reward, num_steps = cart_pole_ctrl.train(number_epochs=2000, save_location='models/taxi-v3.model')
+    for _ in range(10):
+        learner = QLearner(cart_pole_ctrl.get_action_space(), epsilon=0.1, init_alpha=.5, gamma=.9, decay_rate=.999)
+        cart_pole_ctrl.set_learner(learner)
+
+        cumulative_reward, num_steps = cart_pole_ctrl.train(number_epochs=2001, save_location='models/taxi-v555.model')
         running_cumulative_reward.append(cumulative_reward)
 
+
+
     ar = np.array(running_cumulative_reward)
-    avg_cumulative = ar.sum(axis=0)
-    avg_cumulative = avg_cumulative/len(running_cumulative_reward)
+    means = np.mean(ar, axis=0)
+
+    standard_errors = scipy.stats.sem(ar, axis=0)
+    uperconf = means + standard_errors
+    lowerconf = means - standard_errors
+    # avg_cumulative = ar.sum(axis=0)
+    # avg_cumulative = avg_cumulative/len(running_cumulative_reward)
 
     x = np.arange(0, len(cumulative_reward))
-    plt.plot(x, avg_cumulative)
+    x = np.arange(0, len(means))
+    # plt.plot(x, means, 'o')
+
+    z = np.polyfit(x, means, 5)
+    p = np.poly1d(z)
+    plt.plot(x, p(x))
+
+    plt.fill_between(x, uperconf, lowerconf, alpha=0.3, antialiased=True)
+
+    plt.ylim(ymax=50, ymin=-800)
 
     plt.show()
     plt.close()
 
-    z = np.arange(0, len(num_steps))
-    plt.plot(z, num_steps)
-    plt.show()
-    plt.close()
+    # z = np.arange(0, len(num_steps))
+    # plt.plot(z, num_steps)
+    # plt.show()
+    # plt.close()
 
     cart_pole_ctrl.env.close()
 
