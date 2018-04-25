@@ -15,7 +15,7 @@ def get_and_save_data(num_agents, env_name, round):
     state = r.json()
 
     # write to file
-    with open('result-update-{}-env-{}-agents-{}-round-{}.json'.format('Partial', env_name, num_agents, round), 'w') as f:
+    with open('result-update-{}-env-{}-agents-{}-round-{}.json'.format('ALL', env_name, num_agents, round), 'w') as f:
         json.dump(state, f, indent=4)
 
     return
@@ -47,5 +47,8 @@ def experiment(num_agents, env_name):
 
 
 if __name__ == '__main__':
+    # experiment(1, 'Taxi-v2')
+    # experiment(2, 'Taxi-v2')
+    experiment(4, 'Taxi-v2')
     experiment(8, 'Taxi-v2')
 

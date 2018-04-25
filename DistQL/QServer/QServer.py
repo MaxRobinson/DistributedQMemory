@@ -26,7 +26,7 @@ class QServer:
     # This is a server mode that changes central servers are sent back to the workers in the response.
     # If True, the entire QServer Q Values are sent to the workers
     # If False, only the states the server updated from that worker are sent back.
-    DQL_ALL = False
+    DQL_ALL = True
 
 
 class StateBuilderCache:

@@ -10,9 +10,10 @@ np.set_printoptions(threshold=np.nan)
 
 def process_results():
     plt.figure()
-    for agents in (1, 2, 4, 8):
+    for agents in [1, 2, 4, 8]:
         episode_matrix = np.zeros((10, 2001))
         for i in range(10):
+            # with open('result-update-ALL-env-Taxi-v2-agents-{}-round-{}.json'.format(agents, i), 'r') as f:
             with open('result-update-Partial-env-Taxi-v2-agents-{}-round-{}.json'.format(agents, i), 'r') as f:
             # with open('result-update-Partial-env-Taxi-v2-agents-1-round-{}.json'.format(i), 'r') as f:
             # with open('result-update-Partial-env-Taxi-v2-agents-2-round-{}.json'.format(i), 'r') as f:
