@@ -167,6 +167,16 @@ def submit_results():
     return 'Success'
 
 
+@app.route('/experiment/status', methods=['GET'])
+def get_status():
+
+    body = {
+        'complete': State.complete
+    }
+
+    return json.dumps(body)
+
+
 @app.route('/reference/results', methods=['POST'])
 def submit_reference_result():
     body = request.get_json()
