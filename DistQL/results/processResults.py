@@ -14,7 +14,9 @@ def process_results():
         episode_matrix = np.zeros((10, 2001))
         for i in range(10):
             # with open('result-update-ALL-env-Taxi-v2-agents-{}-round-{}.json'.format(agents, i), 'r') as f:
-            with open('result-update-Partial-env-Taxi-v2-agents-{}-round-{}.json'.format(agents, i), 'r') as f:
+            # with open('result-update-Partial-env-Taxi-v2-agents-{}-round-{}.json'.format(agents, i), 'r') as f:
+            with open('result-update-ALL-env-CartPole-v1-agents-{}-round-{}.json'.format(agents, i), 'r') as f:
+
             # with open('result-update-Partial-env-Taxi-v2-agents-1-round-{}.json'.format(i), 'r') as f:
             # with open('result-update-Partial-env-Taxi-v2-agents-2-round-{}.json'.format(i), 'r') as f:
             # with open('result-update-Partial-env-Taxi-v2-agents-4-round-{}.json'.format(i), 'r') as f:
@@ -60,9 +62,9 @@ def process_results():
 
         plt.fill_between(x, uperconf, lowerconf, alpha=0.3, antialiased=True)
 
-    plt.ylim(ymax=50, ymin=-800)
+    # plt.ylim(ymax=50, ymin=-800)
 
-    plt.savefig('test.svg')
+    plt.savefig('test-CartPole.svg')
     plt.show()
     plt.close()
 

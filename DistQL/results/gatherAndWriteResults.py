@@ -47,8 +47,8 @@ def experiment(num_agents, env_name):
 
 
 if __name__ == '__main__':
-    # experiment(1, 'Taxi-v2')
-    # experiment(2, 'Taxi-v2')
-    experiment(4, 'Taxi-v2')
-    experiment(8, 'Taxi-v2')
+    # experiment(1, 'CartPole-v1')
+    experiment(2, 'CartPole-v1')
+    experiment(4, 'CartPole-v1')
+    experiment(8, 'CartPole-v1')
 
