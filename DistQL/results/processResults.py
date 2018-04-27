@@ -62,7 +62,7 @@ def process_results(DQL_type:str="ALL", env_name:str="Taxi-v2"):
         else:
             label = "{} agents".format(agents)
 
-        plt.plot(x, p(x), label=label)
+        plt.plot(x, p(x), label=label, alpha=0.7)
 
         plt.fill_between(x, uperconf, lowerconf, alpha=0.3, antialiased=True)
 
