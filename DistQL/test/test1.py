@@ -1,8 +1,11 @@
 import gym
 
-env = gym.make('LunarLander-v2')
+from StateBuilder.StateBuilderLunarLander import StateBuilderLunarLander
+
+env = gym.make('FrozenLake8x8-v0')
 env.reset()
 
+state_builder = StateBuilderLunarLander()
 
 for i_episode in range(100):
     observation = env.reset()
@@ -15,6 +18,7 @@ for i_episode in range(100):
         action = env.action_space.sample()
 
         observation, reward, done, info = env.step(action)
+        print(observation)
         # print(info)
 
         if done:

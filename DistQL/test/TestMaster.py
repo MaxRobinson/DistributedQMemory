@@ -1,6 +1,7 @@
 from controller.Controller import Controller
 from learner.QLearner import QLearner
 from StateBuilder.StateBuilderCartPole import StateBuilderCartPole
+from StateBuilder.StateBuilderLunarLander import StateBuilderLunarLander
 
 import numpy as np
 import scipy.stats
@@ -10,15 +11,17 @@ import matplotlib.pyplot as plt
 
 def main():
     # Taxi-v2
-    # cart_pole_ctrl = Controller(None, 'CartPole-v1', StateBuilderCartPole())
-    cart_pole_ctrl = Controller(None, 'Taxi-v2', None, communicate=False)
+    cart_pole_ctrl = Controller(None, 'CartPole-v1', StateBuilderCartPole(), communicate=False)
+    # cart_pole_ctrl = Controller(None, 'Taxi-v2', None, communicate=False)
+    # cart_pole_ctrl = Controller(None, 'LunarLander-v2', state_builder=StateBuilderLunarLander(), communicate=False)
+    # cart_pole_ctrl = Controller(None, 'FrozenLake-v0', None, communicate=False)
 
     running_cumulative_reward = []
-    for _ in range(10):
+    for _ in range(3):
         learner = QLearner(cart_pole_ctrl.get_action_space(), epsilon=0.1, init_alpha=.5, gamma=.9, decay_rate=.999)
         cart_pole_ctrl.set_learner(learner)
 
-        cumulative_reward, num_steps = cart_pole_ctrl.train(number_epochs=2001, save_location='models/taxi-v555.model')
+        cumulative_reward, num_steps = cart_pole_ctrl.train(number_epochs=2001, save_location='models/cartPole.model')
         running_cumulative_reward.append(cumulative_reward)
 
 
@@ -32,7 +35,6 @@ def main():
     # avg_cumulative = ar.sum(axis=0)
     # avg_cumulative = avg_cumulative/len(running_cumulative_reward)
 
-    x = np.arange(0, len(cumulative_reward))
     x = np.arange(0, len(means))
     # plt.plot(x, means, 'o')
 
@@ -42,7 +44,7 @@ def main():
 
     plt.fill_between(x, uperconf, lowerconf, alpha=0.3, antialiased=True)
 
-    plt.ylim(ymax=50, ymin=-800)
+    # plt.ylim(ymax=50, ymin=-800)
 
     plt.show()
     plt.close()
@@ -57,13 +59,14 @@ def main():
 
 
 def use_model():
-    cart_pole_ctrl = Controller(None, 'CartPole-v1', StateBuilderCartPole())
+    cart_pole_ctrl = Controller(None, 'CartPole-v1', StateBuilderCartPole(), communicate=False)
     # cart_pole_ctrl = Controller(None, 'Taxi-v2', None)
+    # cart_pole_ctrl = Controller(None, 'LunarLander-v2', state_builder=StateBuilderLunarLander(), communicate=False)
 
-    learner = QLearner(cart_pole_ctrl.get_action_space(), epsilon=0.1, init_alpha=.5, gamma=.9)
+    learner = QLearner(cart_pole_ctrl.get_action_space(), epsilon=0.0, init_alpha=.5, gamma=.9)
 
     cart_pole_ctrl.set_learner(learner)
-    cart_pole_ctrl.load("models/cart-pole.model")
+    cart_pole_ctrl.load("models/CartPole-v1-7.model")
 
     count = 0
     while True:
@@ -73,6 +76,6 @@ def use_model():
 
 
 if __name__ == '__main__':
-    main()
-    # use_model()
+    # main()
+    use_model()
 
