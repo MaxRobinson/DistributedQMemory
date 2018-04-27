@@ -48,7 +48,7 @@ class Controller:
 
             # Save every 100
             print("Epoch: {}".format(_))
-            if _ % 100 == 0:
+            if _ % 1000 == 0:
                 self.save(save_location)
 
             # Update Server based on Update_frequency
@@ -94,6 +94,7 @@ class Controller:
             else:
                 observation_disc = copy(observation)
 
+            # Specifically used for Cart-Pole. Comment out for other env.
             # if done:
             #     reward -= 200
 
