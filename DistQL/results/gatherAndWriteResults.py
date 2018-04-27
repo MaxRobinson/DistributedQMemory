@@ -36,7 +36,7 @@ def experiment(num_agents, env_name):
             if value.get('complete', False):
                 break
             else:
-                time.sleep(10)
+                time.sleep(1)
 
         get_and_save_data(num_agents, env_name, i)
 
