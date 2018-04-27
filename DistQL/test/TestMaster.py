@@ -21,7 +21,7 @@ def main():
         learner = QLearner(cart_pole_ctrl.get_action_space(), epsilon=0.1, init_alpha=.5, gamma=.9, decay_rate=.999)
         cart_pole_ctrl.set_learner(learner)
 
-        cumulative_reward, num_steps = cart_pole_ctrl.train(number_epochs=2001, save_location='models/cartPole.model')
+        cumulative_reward, num_steps = cart_pole_ctrl.train(number_epochs=2001)
         running_cumulative_reward.append(cumulative_reward)
 
 
