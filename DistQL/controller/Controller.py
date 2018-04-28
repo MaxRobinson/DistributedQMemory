@@ -28,6 +28,7 @@ class Controller:
         except Exception as ex:
             logging.error("Error creating Gym", ex)
             raise ex
+        self.env_id = env_id
 
         self.state_builder = state_builder
         self.update_freq = update_freq
@@ -94,9 +95,9 @@ class Controller:
             else:
                 observation_disc = copy(observation)
 
-            # Specifically used for Cart-Pole. Comment out for other env.
-            # if done:
-            #     reward -= 200
+            # Specifically used for Cart-Pole.
+            if done and self.env_id == 'CartPole-v1':
+                reward -= 200
 
             # update metrics
             cumulative_reward += reward
