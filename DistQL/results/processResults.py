@@ -8,12 +8,18 @@ import matplotlib.pyplot as plt
 
 np.set_printoptions(threshold=np.nan)
 
-def process_results(DQL_type:str="ALL", env_name:str="Taxi-v2", legend_loc:int=0):
+def process_results(tau:int=10, DQL_type:str="ALL", env_name:str="Taxi-v2", legend_loc:int=0):
     plt.figure()
     for agents in [1, 2, 4, 8]:
         episode_matrix = np.zeros((10, 2001))
         for i in range(10):
-            with open('result-update-{}-env-{}-agents-{}-round-{}.json'.format(DQL_type, env_name, agents, i), 'r') as f:
+            if tau == 10:
+                filename = 'result-update-{}-env-{}-agents-{}-round-{}.json'.format(DQL_type, env_name, agents, i)
+            else:
+                filename = 'result-tau-{}-update-{}-env-{}-agents-{}-round-{}.json'.format(tau, DQL_type, env_name, agents, i)
+
+            with open(filename, 'r') as f:
+
                 state = json.load(f)
 
                 # get average over all agents
@@ -75,16 +81,21 @@ def process_results(DQL_type:str="ALL", env_name:str="Taxi-v2", legend_loc:int=0
     plt.xlabel("Episode Number")
     plt.ylabel("Cumulative Reward")
     title = "Average Performance and Standard Error "
-    title_part2 = "with DistQL-{} in {}".format(DQL_type, env_name)
+    title_part2 = "with DistQL-{} tau {} in {}".format(DQL_type, tau, env_name)
     plt.title("\n".join([title, title_part2]))
 
-    plt.savefig('{}.svg'.format((title + title_part2).replace(' ', '-')))
+    # plt.savefig('{}.svg'.format((title + title_part2).replace(' ', '-')))
     plt.show()
     plt.close()
 
 
 if __name__ == '__main__':
-    process_results('ALL', 'Taxi-v2', 4)
-    process_results('Partial', 'Taxi-v2', 4)
-    process_results('ALL', 'CartPole-v1', 4)
-    process_results('Partial', 'CartPole-v1', 4)
+    process_results(10, 'ALL', 'Taxi-v2', 4)
+    process_results(10, 'Partial', 'Taxi-v2', 4)
+    process_results(10, 'ALL', 'CartPole-v1', 4)
+    process_results(10, 'Partial', 'CartPole-v1', 4)
+
+    process_results(50, 'ALL', 'Taxi-v2', 4)
+    process_results(100, 'ALL', 'Taxi-v2', 4)
+    process_results(50, 'ALL', 'CartPole-v1', 4)
+    process_results(100, 'ALL', 'CartPole-v1', 4)
