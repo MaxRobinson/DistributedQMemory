@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 np.set_printoptions(threshold=np.nan)
 
-def process_agent_results(num_agents: int=2, DQL_type:str= "ALL", env_name:str= "Taxi-v2", legend_loc:int=0):
+def process_agent_results(tau:int=10, num_agents: int=2, DQL_type:str= "ALL", env_name:str= "Taxi-v2", legend_loc:int=0):
     plt.figure()
 
     # episode_matrix = np.zeros((10, 2001))
@@ -17,7 +17,9 @@ def process_agent_results(num_agents: int=2, DQL_type:str= "ALL", env_name:str= 
         agent_dict[i] = np.zeros((10, 2001))
 
     for i in range(10):
-        with open('result-update-{}-env-{}-agents-{}-round-{}.json'.format(DQL_type, env_name, num_agents, i), 'r') as f:
+        # with open('result-update-{}-env-{}-agents-{}-round-{}.json'.format(DQL_type, env_name, num_agents, i), 'r') as f:
+        filename = 'result-tau-{}-update-{}-env-{}-agents-{}-round-{}.json'.format(tau, DQL_type, env_name, num_agents, i)
+        with open(filename, 'r') as f:
             state = json.load(f)
 
             for agent in range(num_agents):
@@ -72,7 +74,7 @@ def process_agent_results(num_agents: int=2, DQL_type:str= "ALL", env_name:str= 
     plt.xlabel("Episode Number")
     plt.ylabel("Cumulative Reward")
     title = "Average Performance and Standard Error "
-    title_part2 = "of each agent with DistQL-{} in {}".format(DQL_type, env_name)
+    title_part2 = "of each {} agent with DistQL-{} tau {} in {}".format(num_agents, DQL_type, tau, env_name)
     plt.title("\n".join([title, title_part2]))
 
     plt.savefig('{}.svg'.format((title+title_part2).replace(' ', '-')))
@@ -82,18 +84,21 @@ def process_agent_results(num_agents: int=2, DQL_type:str= "ALL", env_name:str= 
 
 if __name__ == '__main__':
     # process_agent_results(2, 'ALL', 'Taxi-v2')
-    # process_agent_results(4, 'ALL', 'Taxi-v2')
-    process_agent_results(8, 'ALL', 'Taxi-v2', 4)
+    # process_agent_results(50, 4, 'ALL', 'Taxi-v2')
+    # process_agent_results(100, 4, 'ALL', 'Taxi-v2')
+    # process_agent_results(8, 'ALL', 'Taxi-v2', 4)
     #
     # process_agent_results(2, 'Partial', 'Taxi-v2')
-    # process_agent_results(4, 'Partial', 'Taxi-v2')
-    process_agent_results(8, 'Partial', 'Taxi-v2', 4)
+    # process_agent_results(50, 4, 'Partial', 'Taxi-v2')
+    # process_agent_results(8, 'Partial', 'Taxi-v2', 4)
     #
     # process_agent_results(2, 'ALL', 'CartPole-v1')
-    # process_agent_results(4, 'ALL', 'CartPole-v1')
-    process_agent_results(8, 'ALL', 'CartPole-v1')
+    process_agent_results(50, 4, 'ALL', 'CartPole-v1')
+    process_agent_results(100, 4, 'ALL', 'CartPole-v1')
+    process_agent_results(50, 8, 'ALL', 'CartPole-v1')
+    process_agent_results(100, 8, 'ALL', 'CartPole-v1')
     #
     # process_agent_results(2, 'Partial', 'CartPole-v1')
-    # process_agent_results(4, 'Partial', 'CartPole-v1')
-    process_agent_results(8, 'Partial', 'CartPole-v1', 2)
+    # process_agent_results(50, 4, 'Partial', 'CartPole-v1')
+    # process_agent_results(8, 'Partial', 'CartPole-v1', 2)
 
