@@ -57,10 +57,15 @@ def process_results(tau:int=10, DQL_type:str="ALL", env_name:str="Taxi-v2", lege
 
 
         x = np.arange(0, len(means))
-        # plt.plot(x, means, 'o')
+        # # plt.plot(x, means, 'o')
+        #
+        # z = np.polyfit(x, means, 15)
+        # p = np.poly1d(z)
+        x_actual = np.arange(0, len(means), 50)
 
-        z = np.polyfit(x, means, 5)
-        p = np.poly1d(z)
+        state_bins = sp.stats.binned_statistic(x, means, statistic='mean', bins=41)
+        uperbins = sp.stats.binned_statistic(x, uperconf, statistic='mean', bins=41)
+        lowerbins = sp.stats.binned_statistic(x, lowerconf, statistic='mean', bins=41)
 
 
         if agents == 1:
@@ -68,9 +73,11 @@ def process_results(tau:int=10, DQL_type:str="ALL", env_name:str="Taxi-v2", lege
         else:
             label = "{} agents".format(agents)
 
-        plt.plot(x, p(x), label=label, alpha=0.7)
+        # plt.plot(x, p(x), label=label, alpha=0.7)
+        plt.plot(x_actual, state_bins[0], label=label, alpha=0.7)
 
-        plt.fill_between(x, uperconf, lowerconf, alpha=0.3, antialiased=True)
+        # plt.fill_between(x, uperconf, lowerconf, alpha=0.3, antialiased=True)
+        plt.fill_between(x_actual, uperbins[0], lowerbins[0], alpha=0.3, antialiased=True)
 
     if env_name == 'Taxi-v2':
         plt.ylim(ymax=50, ymin=-800)
@@ -84,7 +91,7 @@ def process_results(tau:int=10, DQL_type:str="ALL", env_name:str="Taxi-v2", lege
     title_part2 = "with DistQL-{} tau {} in {}".format(DQL_type, tau, env_name)
     plt.title("\n".join([title, title_part2]))
 
-    # plt.savefig('{}.svg'.format((title + title_part2).replace(' ', '-')))
+    plt.savefig('binned-{}.svg'.format((title + title_part2).replace(' ', '-')))
     plt.show()
     plt.close()
 
