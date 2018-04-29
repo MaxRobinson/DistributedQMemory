@@ -80,16 +80,16 @@ As the worker learns it will send updates to the QServer, $Q_c$. In order to sen
 \label{fig:DistQLArchitecture}
 \end{figure}
 
-The QServer is modified each time it receives an update from a worker. $Q_c$ is then updated in accordance to equation 1. For readability $\eta_c$ is used for brevity with the understanding that the learning rate is actually $\eta_{c,(s,a)}$.
+The QServer updates $Q_c$ each time it receives an update from a worker. $Q_c$ is updated in accordance to equation 1. For readability $\eta_c$ is used for brevity with the understanding that the learning rate is actually $\eta_{c,(s,a)}$.
 
 \begin{equation}
 \label{eq1}
 Q_c(s,a) = (1-\frac{\eta_{c}^{2}}{\eta_{i}})Q_c(s,a) + \frac{\eta_{c}^{2}}{\eta_{i}} Q_i(s,a), \text{  } 0 < \eta_{c} \leq \eta_{i} < 1
 \end{equation}
 
-Equation \ref{eq1} is built on the idea that the learning rate $\eta$ can be thought of as a measure of how certain the algorithm is that the current Q-value stored will be the final Q-value in the table. For instance, if $\eta_{i,(s,a)} = .9$ and $Q_{i,(s,a)} = 1$ the worker will apply a large learning rate on the next update to $(s,a)$. This means that the worker is willing to make larger adjustments to the Q-value, and it is less likely that the current Q-value will be the same as the final Q-value in the table, compared to later on. If $\eta_{i,(s,a)} = .01$ and $Q_{i,(s,a)} = 1$, it is much more likely that the current Q-value for $(s,a)$ will remain close to the current Q-value. 
+Equation \ref{eq1} can also be thought of as an aggregation function of worker Q-values. It is built on the idea that the learning rate $\eta$ can be thought of as a measure of how certain the algorithm is that the current Q-value stored will be the final Q-value in the table. For instance, if $\eta_{i,(s,a)} = .9$ and $Q_{i,(s,a)} = 1$ the worker will apply a large learning rate on the next update to $(s,a)$. This means that the worker is willing to make larger adjustments to the Q-value, and it is less likely that the current Q-value will be the same as the final Q-value in the table, compared to later on. If $\eta_{i,(s,a)} = .01$ and $Q_{i,(s,a)} = 1$, it is much more likely that the current Q-value for $(s,a)$ will remain close to the current Q-value. 
 
-The ratio $\frac{\eta_{c}^{2}}{\eta_{i}}$ is calculated to quantify how much the worker $i$ and $Q_c$ agree about how ``stable" the Q-value in $Q_c$ is. The ratio can be re-written as $\frac{\eta_{c}}{\eta_{i}} \eta_{c}$ to demonstrate this more clearly. If $\eta_{c} = \eta_{i}$ then $Q_c$ and $Q_i$ agree on how ``stable" the Q-value is, and an update of $(1-\eta_{c})Q_c + \eta_{c} Q_i(s,a)$. Otherwise, $\frac{\eta_c}{\eta_i} < 1$ which puts more emphasis on the Q-value already stored by $Q_c$ rather than $Q_i$. Intuitively, the idea is that if the central Q-value is more ``stable" than a workers, then the central value should not be highly impacted by a worker's value which is less likely to converge to its own Q-value.
+The ratio $\frac{\eta_{c}^{2}}{\eta_{i}}$ is calculated to quantify how much the worker $i$ and $Q_c$ agree about how stable the Q-value in $Q_c$ is. The ratio can be re-written as $\frac{\eta_{c}}{\eta_{i}} \eta_{c}$ to demonstrate this more clearly. If $\eta_{c} = \eta_{i}$ then $Q_c$ and $Q_i$ agree on how stable the Q-value is, and an update of $(1-\eta_{c})Q_c + \eta_{c} Q_i(s,a)$. Otherwise, $\frac{\eta_c}{\eta_i} < 1$ which puts more emphasis on the Q-value already stored by $Q_c$ rather than $Q_i$. Intuitively, the idea is that if the central Q-value is more stable than a workers, then the central value should not be highly impacted by a worker's value which is less likely to converge to its own Q-value.
 
 It is possible for $\eta_i$ to be less than $\eta_c$ when updates are sent to the QServer. One case where this can happen is if the worker has updated a local $(s,a)$ more times than $Q_c$ has updated $(s,a)$. When $\eta_i < \eta_c$, the central learning rate adopts the workers learning rate such that $\eta_c \leftarrow \eta_i$ prior to the update taking place. This ensures that the central learning rate is always less than or equal to the workers learning rate. Since the learning rate is interpreted as a measure of stability for the Q-value, if a worker has a Q-value that is more stable than the central server, the server wants to acknowledge and adopt the learning rate of the worker, when updating $Q_c$.
 
@@ -275,7 +275,9 @@ The effect of different exploration strategies would also be of interest for fut
 
 \section{Conclusion}
 \label{conclusion}
+This paper introduces the idea of Distributed Q-Learning using a centralized QServer. An aggregation function is described, and different versions of DistQL were shown to demonstrate the effect the effects of how updates occur and how the frequency of updates can effect learning. 
 
+While more work needs to be done, experiments showed that it is possible to decrease the number of episodes needed for an agent to learn a good policy by distributing the learning process amongst several learners, aggregating the experiences, and distributing it back among them.
 
 \vskip 0.2in
 \bibliography{DistributedQLearning}
