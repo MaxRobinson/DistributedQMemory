@@ -18,7 +18,7 @@ class QServer:
     ### STATICS
     ALPHA_INDEX = 1
     VALUE_INDEX = 0
-    LEARNING_DECAY = .99
+    LEARNING_DECAY = .999
     INITIAL_ALPHA = .99
 
     Q = {}
@@ -211,6 +211,15 @@ def get_state():
 def clear_state():
     State.reset()
     return 'Success'
+
+
+@app.route('/DQL/all', methods=['POST'])
+def set_dql_type():
+    body = request.get_json()
+    dql_type = body.get('DQL_ALL')
+
+    QServer.DQL_ALL = bool(dql_type)
+    return json.dumps({'DQL_ALL': QServer.DQL_ALL})
 
 
 # <editor-fold desc="Helpers">
