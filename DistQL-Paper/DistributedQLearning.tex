@@ -21,7 +21,7 @@
 \maketitle
 
 \begin{abstract}
-
+DistQL is a parallel, distributed, reinforcement learning system. The system uses multiple agent-environment pairs, where agents can learn in parallel to each other and update a central QServer. DistQL was applied to two environments, using Q-Learning for each of the agents. The results showed that it is possible to have large decrease in the number of episodes need for an agent to perform well compared to a single agent as the number of distributed agents increases. The best results showed approximately a linear relationship between the number of agents and a decrease in the number of episodes needed for each agent.
 \end{abstract}
 
 \section{Introduction}
@@ -48,7 +48,7 @@ Recent research has studied speeding up Deep Neural Networks for reinforcement l
 %This proposal suggests a step back to explore a slightly more simplistic model of distributed reinforcement learning using Q-learning. It suggests a parallelized and distributed version of the Q-learning algorithm using a traditional Q-memory, hereon in referred to as Distributed Q-learning (DistQL). DistQL, similar to other distributed reinforcement learning approaches, uses multiple separate agents and environments with local copies of parameters and memory to learn, and has a centralized main Q-memory. Different from other algorithms, however, DistQL sends learned Q-values to the centralize memory which are then combined with the existing values. The centralized Q-memory then updates values, using a linear combination of Q-values and hyperparameters explained in Section \ref{Approach}. An advantage to this approach is that the traditional Q-learning algorithm is being leveraged. This means that the optimality convergence guarantees of Q-learning, even in an asynchronous settings, are likely to still hold true.
 
 
-\section{Previous Work}
+\section{Previous Work and Background}
 \label{Literature Survey}
 Q-Learning \cite{watkins} has been a foundational algorithm in reinforcement learning, especially after it was shown to have optimal convergence in the limit \cite{qlearning}. Very soon after this, asynchronous methods of Q-learning were being explored.  
 
@@ -62,12 +62,12 @@ The General Reinforcement Learning Architecture (Gorila) (Nair et al. 2015)\noci
 
 A3C (Mnih et al. 2016)\nocite{A3C} collapses Gorila onto a single machine, using multiple processors to parallelize the agents actions in an environment. A3C similarly computes gradients for each agent's model at each time step, locally, but accumulates these gradients over a series of time steps before updating the central model, every so often. This aims to balance computational efficiency with data efficiency. 
 
-\section{Q-Learning}
+\subsection{Q-Learning}
 \label{Q-Learning}
 
 \section{Distributed Q-learning} 
 \label{algorithm}
-Distributed Q-Learning (DistQL) uses Q-Learning as a foundation for learning and delegates learning to multiple agents, similar to what is done in A3C and Gorilla. DistQL uses multiple worker agent-environment pairs to learn rather than a single agent and environment. As the agents learn and complete epochs, a central QServer, with memory $Q_c$, is updated. The QServer is updated at regular intervals by the workers, based on an update frequency $\tau$. The QServer also keeps a central learning rate $\eta_{c,(s,a)}$ for each $(s,a)$ pair. This learning rate is decayed according the the number of times that particular $(s,a)$ pair has been updated. 
+Distributed Q-Learning (DistQL) uses Q-Learning as a foundation for learning and delegates learning to multiple agents, similar to what is done in A3C and Gorilla. DistQL uses multiple worker agent-environment pairs to learn in parallel rather than a single agent and environment. As the agents learn and complete episodes, a central QServer, with memory $Q_c$, is updated. The QServer is updated at regular intervals by the workers, based on an update frequency $\tau$. The QServer also keeps a central learning rate $\eta_{c,(s,a)}$ for each $(s,a)$ pair. This learning rate is decayed according the the number of times that particular $(s,a)$ pair has been updated. 
 
 More formally, DistQL has $n$ worker agents $A_1,..., A_n$. Each agent also has a copy of the environment in which it acts, $E_1,...,E_n$. Each agent keeps track of a local Q-memory, $Q_i$, as well as local parameters such as discount factor $\gamma_i$, exploration chance $\epsilon$, and learning rates $\eta_{i,(s,a)}$. Each agent acts and learns inside of its environment according to an $\epsilon$-greedy Q-Learning algorithm.
 
@@ -275,7 +275,7 @@ The effect of different exploration strategies would also be of interest for fut
 
 \section{Conclusion}
 \label{conclusion}
-This paper introduces the idea of Distributed Q-Learning using a centralized QServer. An aggregation function is described, and different versions of DistQL were shown to demonstrate the effect the effects of how updates occur and how the frequency of updates can effect learning. 
+This paper introduces the idea of Distributed Q-Learning using a centralized QServer with asynchronous updates. An aggregation function is described, and different versions of DistQL were shown to demonstrate the effect the effects of how updates occur and how the frequency of updates can effect learning. 
 
 While more work needs to be done, experiments showed that it is possible to decrease the number of episodes needed for an agent to learn a good policy by distributing the learning process amongst several learners, aggregating the experiences, and distributing it back among them.
 
