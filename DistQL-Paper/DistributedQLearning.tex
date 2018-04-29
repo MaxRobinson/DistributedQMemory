@@ -1,5 +1,5 @@
 \documentclass[jair,twoside,11pt,theapa]{article}
-\usepackage{jair, theapa, rawfonts, graphicx, color}
+\usepackage{jair, theapa, rawfonts, graphicx, color, caption, amsmath}
 
 %\jairheading{1}{2018}{}{}{}
 \ShortHeadings{Distributed Q-Learning (DistQL)}
@@ -66,14 +66,11 @@ A3C (Mnih et al. 2016)\nocite{A3C} collapses Gorila onto a single machine, using
 
 \section{Distributed Q-learning} 
 \label{algorithm}
-Distributed Q-Learning (DistQL) users Q-Learning as a foundation for learning and spreads out learning to multiple agents, similar to what is done in A3C and Gorilla. DistQL uses multiple worker agent-environment pairs to learn rather than a single agent and environment. As the agents learn and complete epochs, a central QServer, $Q_c$, is updated. The QServer is updated at regular intervals by the workers, based on an update frequency $\tau$. The QServer also keeps a central learning rate $\eta_{c,(s,a)}$ for each $(s,a)$ Q value. This learning rate is decayed according the the number of times that particular $(s,a)$ pair has been updated. 
+Distributed Q-Learning (DistQL) uses Q-Learning as a foundation for learning and delegates learning to multiple agents, similar to what is done in A3C and Gorilla. DistQL uses multiple worker agent-environment pairs to learn rather than a single agent and environment. As the agents learn and complete epochs, a central QServer, with memory $Q_c$, is updated. The QServer is updated at regular intervals by the workers, based on an update frequency $\tau$. The QServer also keeps a central learning rate $\eta_{c,(s,a)}$ for each $(s,a)$ pair. This learning rate is decayed according the the number of times that particular $(s,a)$ pair has been updated. 
 
-More formally, DistQL has $n$ agents $A_1,..., A_n$. Each agent also has a copy of the environment in which it acts, $E_1,...,E_n$. Each agent keeps track of a local Q-memory, $Q_i$, as well as local parameters such as discount factor $\gamma_i$, exploration chance $\epsilon$, and learning rates $\eta_i,(s,a)$. Each agent acts and learns inside of its environment according to an $\epsilon$-greedy Q-Learning algorithm.
+More formally, DistQL has $n$ worker agents $A_1,..., A_n$. Each agent also has a copy of the environment in which it acts, $E_1,...,E_n$. Each agent keeps track of a local Q-memory, $Q_i$, as well as local parameters such as discount factor $\gamma_i$, exploration chance $\epsilon$, and learning rates $\eta_{i,(s,a)}$. Each agent acts and learns inside of its environment according to an $\epsilon$-greedy Q-Learning algorithm.
 
 As the worker learns it will send updates to the QServer, $Q_c$. In order to send updates, a list of $Q_i(s,a)$'s that have been modified since the agent last sent an update is kept by the worker, $Set_{Q_i} = Set(Q_i'(s,a),...)$. The agent sends updates to $Q_c$ every $\tau$ epochs. $\tau$ is a hyperparameter that can be adjusted to change the frequency with which workers update $Q_c$. An architecture digram of DistQL can be seen in Figure \ref{fig:DistQLArchitecture}. 
-
-
-
 
 \begin{figure}[h]
 \centering
@@ -81,6 +78,31 @@ As the worker learns it will send updates to the QServer, $Q_c$. In order to sen
 \caption{DistQL Architecture with 4 agents}
 \label{fig:DistQLArchitecture}
 \end{figure}
+
+The QServer is modified each time it receives an update from a worker. $Q_c$ is then updated in accordance to equation 1. For readability $\eta_c$ is used for brevity with the understanding that the learning rate is actually $\eta_{c,(s,a)}$.
+
+\begin{equation}
+\label{eq1}
+Q_c(s,a) = (1-\frac{\eta_{c}^{2}}{\eta_{i}})Q_c(s,a) + \frac{\eta_{c}^{2}}{\eta_{i}} Q_i(s,a), \text{  } 0 < \eta_{c} \leq \eta_{i} < 1
+\end{equation}
+
+Equation \ref{eq1} is built on the idea that the learning rate $\eta$ can be thought of as a measure of how certain the algorithm is that the current Q-value stored will be the final Q-value in the table. For instance, if $\eta_{i,(s,a)} = .9$ and $Q_{i,(s,a)} = 1$ the worker will apply a large learning rate on the next update to $(s,a)$. This means that the worker is willing to make larger adjustments to the Q-value, and it is less likely that the current Q-value will be the same as the final Q-value in the table, compared to later on. If $\eta_{i,(s,a)} = .01$ and $Q_{i,(s,a)} = 1$, it is much more likely that the current Q-value for $(s,a)$ will remain close to the current Q-value. 
+
+The ratio $\frac{\eta_{c}^{2}}{\eta_{i}}$ is calculated to quantify how much the worker $i$ and $Q_c$ agree about how ``stable" the Q-value in $Q_c$ is. The ratio can be re-written as $\frac{\eta_{c}}{\eta_{i}} \eta_{c}$ to demonstrate this more clearly. If $\eta_{c} = \eta_{i}$ then $Q_c$ and $Q_i$ agree on how ``stable" the Q-value is, and an update of $(1-\eta_{c})Q_c + \eta_{c} Q_i(s,a)$. Otherwise, $\frac{\eta_c}{\eta_i} < 1$ which puts more emphasis on the Q-value already stored by $Q_c$ rather than $Q_i$. Intuitively, the idea is that if the central Q-value is more ``stable" than a workers, then the central value should not be highly impacted by a worker's value which is less likely to converge to its own Q-value.
+
+It is possible for $\eta_i$ to be less than $\eta_c$ when updates are sent to the QServer. One case where this can happen is if the worker has updated a local $(s,a)$ more times than $Q_c$ has updated $(s,a)$. When $\eta_i < \eta_c$, the central learning rate adopts the workers learning rate such that $\eta_c \leftarrow \eta_i$ prior to the update taking place. This ensures that the central learning rate is always less than or equal to the workers learning rate. Since the learning rate is interpreted as a measure of stability for the Q-value, if a worker has a Q-value that is more stable than the central server, the server wants to acknowledge and adopt the learning rate of the worker, when updating $Q_c$.
+
+%This also allows for workers have differing ideas about the stability of different Q-values. The QServer is then the arbiter of these ideas, and reconciles the difference based on a central learning rate. 
+
+%A central learning rate $\eta_c$ is used for a few different reasons. 
+Using a central learning rate $\eta_c$ allows for the update equation to remain asynchronous. By keeping a central learning rate, the QServer can remain agnostic to the frequency of the updates from workers and from the order of the updates. This means less logic must be written to coordinate the updates from workers. This allows each worker to update the $Q_c$ without having to wait for other workers to also be updating $Q_c$. This also means that, not all workers have to be started at the same time, or remain in-sync with other works on which epoch they are on. This has benefits from a scaling perspective since allows workers to be far less dependent on the QServer. 
+
+% talk about updates pushed back to workers. 
+After updates to $Q_c$ are made, there are two strategies that are explored for updating the workers. The QServer can either send the entire contents of $Q_c$ to the worker, or it can send back only updates states that the worker initially sent to the QServer. These options are denoted DistQL-ALL and DistQL-Partial respectively. DistQL-ALL is the default option, and is synonymous with DistQL. 
+
+In DistQL-ALL, workers will receive the response from the QServer which contains a copy of $Q_c$. The worker will then overwrite all $Q_i$ Q-values with the corresponding $Q_c$ Q-value. For any states in $Q_c$ that are not in $Q_i$, the agent adopts both the Q-value and the learning rate from $Q_c$. This method provides workers with additional information collected from other workers and has the effect of homogenizing their memories. In this variation, state-action pairs that were explored by one worker would then be shared with other workers even if the worker has not explored that state-action pair.
+
+In DistQL-Partial, workers only receive updates for the states submitted to the QServer. If worker $A_i$ updates the QServer with $Set_{Q_i}$, $A_i$ receives back a set $Set_{Q_i}'$ containing the same set of state-action pairs but with Q-values from $Q_c$. The worker then replaces any local Q-values with values in the response set. This adaptation just has the effect of reconciling the Q-values known by the worker with the central server. This provides shared knowledge only about states the worker knows about. No new state-action pairs are shared through this update. Thus exploration is not shared across workers. 
 
 
 
@@ -94,17 +116,26 @@ The Cart Pole environment consists of trying to balance a pole upright while att
 
 For Cart Pole, the implementation uses a continuous state space with 4 features. In order to apply Q-Learning, the continuous state space must be discretized. The first three features are discretized into 8 bins of equal size, with values between -2.4 to 2.4, -2 to 2 and -1 to 1 for features 0, 1, and 2 respectively. The fourth feature is discretized into 12 bins of equal size between the values of -3.5 to 3.5. This specific discretization is chosen because of the anecdotal and demonstrated success described by Victor Vilches (2017)\nocite{Victor:github}. 
 
-A series of experiments were run in each environment. In each environment, DistQL and DistQL-Partial were run with 1, 2, 4, and 8 agents each with 10 trials. Each trail consists of 2000 epochs for each agent. A limit of 2000 epochs per trail is used to allow for reasonable training times on a smaller machine but still demonstrate learning occurring in each environment. 
+A series of experiments were run in each environment. DistQL-ALL and DistQL-Partial were run with 1, 2, 4, and 8 agents each with 10 trials. Each trail consists of 2000 epochs for each agent. A limit of 2000 epochs per trail is used to allow for reasonable training times on a smaller machine but still demonstrate learning occurring in each environment. For each number of agents run, $\tau$ was adjusted to be 10, 50, and 100. This allows a comparison of how update frequency impacts learning. Table 1 shows all experiments performed. A total of 48 experiments were run. 
 %% Talk about \tau here. 
 
 Each agent and the central Q server used the same hyperparameters for all experiments. The learning rate $\eta$ for each $(s,a)$ was initialized to .5 and decayed so that $\eta = 0.5 \times 0.999^i$ where $i$ is the $ith$ update to $(s,a)$. The exploration rate $\epsilon$ was initialized to .1 and decayed so that $\epsilon = 0.5 \times 0.999^j$ where $j$ is the $jth$ episode in the learning process. The discount factor $\gamma$ was set to .9. These hyperparameters were chosen based on anecdotal success of a single Q Learner acting in the environments. An exhaustive search for optimal hyperparameters and decay rates was not performed. 
 
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\linewidth]{ExperimentTable}
+\caption*{Table 1: Experiment Table}
+\label{fig:ExperimentTable}
+\end{figure}
+
+% Talk about source code
+For these experiments, the DistQL was implemented in Python 3.5 using an http-based client-server architecture. Each agent was run in a thread and provided updates and received responses through the http protocol. The server implementation is single-threaded and does not allow for concurrent modification of the Q-memory. The Q-Learning agent is also written in python as part of a framework for DistQL. All source code for the DistQL implementation can be found at https://github.com/MaxRobinson/DistributedQMemory.
+
 \subsection{Evaluation} 
 \label{evaluation}
-Since in each environment gives a reward at each time step, the cumulative reward for each episode can be used to judge the performance of the agent or agents in each environment. Specifically, the average cumulative reward for each set of agents over the 10 trails is compared with each other set of agents in that environment. For example, the performance of DistQL-ALL with 2 agents is calculated by taking the average cumulative reward that each agent experienced over the 2000 episodes individually, and then averaging the performance of the two agents together. This provides an aggregate average cumulative reward for all agents in DistQL-ALL for 2 agents. 
+Since in each environment gives a reward at each time step, the cumulative reward for each episode is used to judge the performance of the agent or agents in each environment. Specifically, the average cumulative reward for each set of agents over the 10 trails is compared with each other set of agents in that environment. For example, the performance of DistQL-ALL with 2 agents is calculated by taking the average cumulative reward for each epoch that each agent experienced over the 2000 epochs individually, and then averaging the performance of the two agents together. This provides an aggregate average cumulative reward for all agents in DistQL-ALL for 2 agents. 
 
-The performance of the DistQL with the different number of agents are compared to one another. The higher the average cumulative reward achieved earlier, or in fewer episodes, the better.
-
+The performance of the DistQL with the different number of agents are compared to one another. A set of agents is considered to have done better if the average cumulative reward achieved by the set of agents is higher than other sets of agents earlier on. The higher the average cumulative reward achieved earlier, or in fewer episodes, the better.
 
 \subsection{Results}
 \label{results}
