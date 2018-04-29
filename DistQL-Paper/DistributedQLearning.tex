@@ -1,5 +1,5 @@
 \documentclass[jair,twoside,11pt,theapa]{article}
-\usepackage{jair, theapa, rawfonts}
+\usepackage{jair, theapa, rawfonts, graphicx, color}
 
 %\jairheading{1}{2018}{}{}{}
 \ShortHeadings{Distributed Q-Learning (DistQL)}
@@ -44,7 +44,7 @@ To combat this, researchers have focused on ways to adapt these reinforcement le
 
 Recent research has studied speeding up Deep Neural Networks for reinforcement learning such as DQN (Mnih et al., 2013)\nocite{Mnih2013} and others. Quite a few papers have suggested ways of parallelizing both the computation for these methods as well as distributing actors and learners to run in parallel, which send back gradients to be used to update a centralized parameter store. 
 
-This proposal suggests a step back to explore a slightly more simplistic model of distributed reinforcement learning using Q-learning. It suggests a parallelized and distributed version of the Q-learning algorithm using a traditional Q-memory, hereon in referred to as Distributed Q-learning (DistQL). DistQL, similar to other distributed reinforcement learning approaches, uses multiple separate agents and environments with local copies of parameters and memory to learn, and has a centralized main Q-memory. Different from other algorithms, however, DistQL sends learned Q-values to the centralize memory which are then combined with the existing values. The centralized Q-memory then updates values, using a linear combination of Q-values and hyperparameters explained in Section \ref{Approach}. An advantage to this approach is that the traditional Q-learning algorithm is being leveraged. This means that the optimality convergence guarantees of Q-learning, even in an asynchronous settings, are likely to still hold true.
+%This proposal suggests a step back to explore a slightly more simplistic model of distributed reinforcement learning using Q-learning. It suggests a parallelized and distributed version of the Q-learning algorithm using a traditional Q-memory, hereon in referred to as Distributed Q-learning (DistQL). DistQL, similar to other distributed reinforcement learning approaches, uses multiple separate agents and environments with local copies of parameters and memory to learn, and has a centralized main Q-memory. Different from other algorithms, however, DistQL sends learned Q-values to the centralize memory which are then combined with the existing values. The centralized Q-memory then updates values, using a linear combination of Q-values and hyperparameters explained in Section \ref{Approach}. An advantage to this approach is that the traditional Q-learning algorithm is being leveraged. This means that the optimality convergence guarantees of Q-learning, even in an asynchronous settings, are likely to still hold true.
 
 
 \section{Previous Work}
@@ -64,29 +64,51 @@ A3C (Mnih et al. 2016)\nocite{A3C} collapses Gorila onto a single machine, using
 \section{Q-Learning}
 \label{Q-Learning}
 
-\section{Distributed Q-learning Algorithm} 
+\section{Distributed Q-learning} 
 \label{algorithm}
+Distributed Q-Learning (DistQL) users Q-Learning as a foundation for learning and spreads out learning to multiple agents, similar to what is done in A3C and Gorilla. DistQL uses multiple worker agent-environment pairs to learn rather than a single agent and environment. As the agents learn and complete epochs, a central QServer, $Q_c$, is updated. The QServer is updated at regular intervals by the workers, based on an update frequency $\tau$. The QServer also keeps a central learning rate $\eta_{c,(s,a)}$ for each $(s,a)$ Q value. This learning rate is decayed according the the number of times that particular $(s,a)$ pair has been updated. 
+
+More formally, DistQL has $n$ agents $A_1,..., A_n$. Each agent also has a copy of the environment in which it acts, $E_1,...,E_n$. Each agent keeps track of a local Q-memory, $Q_i$, as well as local parameters such as discount factor $\gamma_i$, exploration chance $\epsilon$, and learning rates $\eta_i,(s,a)$. Each agent acts and learns inside of its environment according to an $\epsilon$-greedy Q-Learning algorithm.
+
+As the worker learns it will send updates to the QServer, $Q_c$. In order to send updates, a list of $Q_i(s,a)$'s that have been modified since the agent last sent an update is kept by the worker, $Set_{Q_i} = Set(Q_i'(s,a),...)$. The agent sends updates to $Q_c$ every $\tau$ epochs. $\tau$ is a hyperparameter that can be adjusted to change the frequency with which workers update $Q_c$. An architecture digram of DistQL can be seen in Figure \ref{fig:DistQLArchitecture}. 
+
+
+
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\linewidth]{"DistQL Architecture-modified"}
+\caption{DistQL Architecture with 4 agents}
+\label{fig:DistQLArchitecture}
+\end{figure}
+
 
 
 \section{Experiments}
 \label{experiments}
-%DistQL can be applied to any environment or problem to which Q-Learning can be applied.  
-To demonstrate the effects of DistQL, the Taxi world \cite{Dietterich2000} and Cart Pole \cite{Barto83} environments were chosen for agents to learn in. The environment implementations used are part of the OpenAI Gym \nocite{gym} and are publicly available. The goal in each environment is for the agent to achieve the highest reward possible in the environment. 
+To demonstrate the effects of DistQL, the Taxi world \cite{Dietterich2000} and Cart Pole (Barto et al. 1983)\nocite{Barto83} environments were chosen for agents to learn in. The environment implementations used are part of the OpenAI Gym \nocite{gym} and are publicly available. The goal in each environment is for the agent to achieve the highest reward possible in the environment. 
 
-The taxi world is a 5 by 5 grid world where the agent is a taxi driver. The goal of the agent is to navigate to the passenger, pick him or her up, navigate to the goal, and drop the passenger off at another destination. For rewards, the agent receives +20 points for successfully dropping off the passenger, -1 point for every time step, and -10 penalty for any illegal pick-up or drop-off actions made. The actions available to the agent are to move in the four cardinal and perform a pick-up or drop-off action. An episode finishes after the passenger has been successfully dropped off at their destination.
+The taxi world is a 5 by 5 grid world where the agent is a taxi driver, and there 4 marked spaces in the grid. The goal of the agent is to navigate to the passenger, pick him or her up, navigate to the goal, and drop the passenger off at another destination. For rewards, the agent receives +20 points for successfully dropping off the passenger, -1 point for every time step, and -10 penalty for any illegal pick-up or drop-off actions made. The actions available to the agent are to move in the four cardinal and perform a pick-up or drop-off action. An episode finishes after the passenger has been successfully dropped off at their destination.
 
 The Cart Pole environment consists of trying to balance a pole upright while attached by a joint to a cart on a frictionless track. The pole starts upright and the goal is to keep the pole balanced upright for as long as possible. The cart can move left or right along the track by applying a force of +1 or -1. The episode finishes after the pole leans 15 degrees left or right or the cart has moved 2.4 units from the center. A reward of +1 is given to the agent for every time step that the pole stays upright. For this experiment, the OpenAI implementation was modified so that when an episode is terminated a reward of -200 is incurred. 
 
 For Cart Pole, the implementation uses a continuous state space with 4 features. In order to apply Q-Learning, the continuous state space must be discretized. The first three features are discretized into 8 bins of equal size, with values between -2.4 to 2.4, -2 to 2 and -1 to 1 for features 0, 1, and 2 respectively. The fourth feature is discretized into 12 bins of equal size between the values of -3.5 to 3.5. This specific discretization is chosen because of the anecdotal and demonstrated success described by Victor Vilches (2017)\nocite{Victor:github}. 
 
+A series of experiments were run in each environment. In each environment, DistQL and DistQL-Partial were run with 1, 2, 4, and 8 agents each with 10 trials. Each trail consists of 2000 epochs for each agent. A limit of 2000 epochs per trail is used to allow for reasonable training times on a smaller machine but still demonstrate learning occurring in each environment. 
+%% Talk about \tau here. 
 
-
+Each agent and the central Q server used the same hyperparameters for all experiments. The learning rate $\eta$ for each $(s,a)$ was initialized to .5 and decayed so that $\eta = 0.5 \times 0.999^i$ where $i$ is the $ith$ update to $(s,a)$. The exploration rate $\epsilon$ was initialized to .1 and decayed so that $\epsilon = 0.5 \times 0.999^j$ where $j$ is the $jth$ episode in the learning process. The discount factor $\gamma$ was set to .9. These hyperparameters were chosen based on anecdotal success of a single Q Learner acting in the environments. An exhaustive search for optimal hyperparameters and decay rates was not performed. 
 
 \subsection{Evaluation} 
 \label{evaluation}
+Since in each environment gives a reward at each time step, the cumulative reward for each episode can be used to judge the performance of the agent or agents in each environment. Specifically, the average cumulative reward for each set of agents over the 10 trails is compared with each other set of agents in that environment. For example, the performance of DistQL-ALL with 2 agents is calculated by taking the average cumulative reward that each agent experienced over the 2000 episodes individually, and then averaging the performance of the two agents together. This provides an aggregate average cumulative reward for all agents in DistQL-ALL for 2 agents. 
+
+The performance of the DistQL with the different number of agents are compared to one another. The higher the average cumulative reward achieved earlier, or in fewer episodes, the better.
+
 
 \subsection{Results}
 \label{results}
+
 
 \section{Discussion}
 \label{discussion}
