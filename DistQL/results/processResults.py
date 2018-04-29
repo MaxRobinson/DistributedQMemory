@@ -13,10 +13,10 @@ def process_results(tau:int=10, DQL_type:str="ALL", env_name:str="Taxi-v2", lege
     for agents in [1, 2, 4, 8]:
         episode_matrix = np.zeros((10, 2001))
         for i in range(10):
-            if tau == 10:
-                filename = 'result-update-{}-env-{}-agents-{}-round-{}.json'.format(DQL_type, env_name, agents, i)
-            else:
-                filename = 'result-tau-{}-update-{}-env-{}-agents-{}-round-{}.json'.format(tau, DQL_type, env_name, agents, i)
+            # if tau == 10:
+            #     filename = 'result-update-{}-env-{}-agents-{}-round-{}.json'.format(DQL_type, env_name, agents, i)
+            # else:
+            filename = 'result-tau-{}-update-{}-env-{}-agents-{}-round-{}.json'.format(tau, DQL_type, env_name, agents, i)
 
             with open(filename, 'r') as f:
 
@@ -104,5 +104,10 @@ if __name__ == '__main__':
 
     process_results(50, 'ALL', 'Taxi-v2', 4)
     process_results(100, 'ALL', 'Taxi-v2', 4)
+    process_results(50, 'Partial', 'Taxi-v2', 4)
+    process_results(100, 'Partial', 'Taxi-v2', 4)
+
     process_results(50, 'ALL', 'CartPole-v1', 4)
     process_results(100, 'ALL', 'CartPole-v1', 4)
+    process_results(50, 'Partial', 'CartPole-v1', 4)
+    process_results(100, 'Partial', 'CartPole-v1', 4)
