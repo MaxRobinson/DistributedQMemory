@@ -39,8 +39,9 @@ The best performing agent required 1,500,000 training games to beat one of the b
 As a more modern example, Mnih et al. (2013) \nocite{Mnih2013} developed an algorithm to play Atari 2600 video games called DQN. To learn to play each game at a human level or higher,
 50 million frames were required to train an agent for each game. Total training on all 49 games in the study took about 38 days of game experience (Mnih et al. 2015). 
 
-The constraint of a lone agent acting sequentially can create situations where training an agent to learn a task can take an exorbitant amount of time. 
-To combat this, researchers have focused on ways to adapt these reinforcement learning algorithm to run in parallel to decrease the amount of time it takes a single agent to learn. 
+The constraint of a lone agent acting sequentially can create situations where training an agent to learn a task can take an exorbitant number of episodes. 
+To combat this, researchers have focused on ways to adapt these reinforcement learning algorithm to run in parallel to decrease the number of episodes it takes for a single agent to achieve high performance.
+%a single agent to learn. 
 
 Recent research has studied speeding up Deep Neural Networks for reinforcement learning such as DQN (Mnih et al., 2013)\nocite{Mnih2013} and others. Quite a few papers have suggested ways of parallelizing both the computation for these methods as well as distributing actors and learners to run in parallel, which send back gradients to be used to update a centralized parameter store. 
 
@@ -264,8 +265,13 @@ To possibly fix the second issue, different hyperparameters could be found for t
 
 \section{Future Work}
 \label{future}
+DistQL opens the door for a host of other work to follow after and to build upon it. As a result, there are several interesting areas to explore for future work. 
 
+The current implementation of DistQL uses an aggregation function that relies on a central learning rate to help arbitrate the updates of the different worker agents in an asynchronous manner. Future work could explore what other possible aggregation functions could be used instead. A possible example would be treating the learning rates as the likelihood of convergence to that Q-value. An expected value function could then be used to aggregate the Q-values for each agent. This could help remove additional hyperparameters from the learning process.
 
+The asynchronous nature of DistQL is a bonus but was not formally shown to be optimal. Work has been done by Tsitsiklis (1994) \nocite{Tsitsiklis1994} showed Q-Learning can be optimal in an asynchronous setting. Future work to show if DistQL fits the guidelines that Tsitsiklis created could determine if aggregation techniques like those used in DistQL do or do not break the optimality guarantees of Q-Learning. 
+
+The effect of different exploration strategies would also be of interest for future work. As shown by the DistQL-ALL to DistQL-Partial comparison, a large part of the power of DistQL-ALL comes from the shared exploration of worker agents. Using different exploration strategies or even different exploration strategies per worker and how they effected learning would be of significant interest. 
 
 \section{Conclusion}
 \label{conclusion}
