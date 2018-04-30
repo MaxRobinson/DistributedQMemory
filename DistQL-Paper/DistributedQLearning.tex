@@ -70,6 +70,22 @@ A3C (Mnih et al. 2016)\nocite{A3C} collapses Gorila onto a single machine, using
 
 \subsection{Q-Learning}
 \label{Q-Learning}
+Q-Learning, Watkins (1989)\nocite{watkins}, is a dynamic programming approach to teaching an agent how to learn in a Markov Decision Process (MDP) \cite{Bellman}. An MDP can be used to model many environments and is used frequently in reinforcement learning. The goal of Q-learning is to find an optimal policy $\pi$ that maximizes the reward of the agent as it moves in the state space. The policy is what determines the agent's behavior. 
+%% Q-learning is a temporal difference method to approximating the Bellman equation. The Bellman equation can be thought of as a recursive function that provides the optimal action to take based on the expected reward.
+
+Q-Learning works by keeping state-action table, sometimes called a Q-memory, that records the utility of that state-action pair, known as the Q-value. These state-action pairs are then updated over time as the agent moves about the world. Specifically, Q-Learning operates by following an action-observation loop where the agent observers state $s$, selects and action to perform $a$, observers the subsequent state $s'$, and receives an immediate reward $r$. The Q-value for $s,a$ is then updated based on the current knowledge of the state, received reward, and past state and action. The Q-value for $(s,a)$ is updated by equation \ref{Q-equation}.
+
+\begin{equation}
+\label{Q-equation}
+Q_{t+1}(s,a) \leftarrow (1-\eta)Q_t(s,a) + \eta(r + \gamma \max_{a'} Q_t(s',a'))
+\end{equation}
+
+In equation \ref{Q-equation}, $\eta$ is a learning rate, $\gamma$ is a discount factor, and $r$ is the immediate reward. A discount factor is applied since the future reward from taking $a'$ in $s'$ is less valuable than the current reward received by taking $a$ in $s$. 
+
+A benefit of Q-learning is that it has been shown to discover an optimal policy \cite{qlearning} given that every state and action can be experienced an infinite number of times. While this is not feasible, exploration policies are used to attempt to explore the state space while still finding an optimal policy. 
+
+In this paper, an $\epsilon$-greedy exploration strategy is used to explore and exploit the state space. This means that a policy $\pi(s)$ is chosen such that $\pi(s)=argmax_a(Q(s,a)) \text{ with probability } 1-\epsilon$ and a random action $a$ is chosen otherwise. To allow for learning to converge, the $\epsilon$ value is decayed on a schedule so as to reduce the number of random actions taken later on in the learning process. 
+
 
 \section{Distributed Q-learning} 
 \label{algorithm}
@@ -86,7 +102,7 @@ As the worker learns it will send updates to the QServer, $Q_c$. In order to sen
 \label{fig:DistQLArchitecture}
 \end{figure}
 
-The QServer updates $Q_c$ each time it receives an update from a worker. $Q_c$ is updated in accordance to equation 1. For readability $\eta_c$ is used for brevity with the understanding that the learning rate is actually $\eta_{c,(s,a)}$.
+The QServer updates $Q_c$ each time it receives an update from a worker. $Q_c$ is updated in accordance to equation \ref{eq1}. For readability $\eta_c$ is used for brevity with the understanding that the learning rate is actually $\eta_{c,(s,a)}$.
 
 \begin{equation}
 \label{eq1}
